@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>画像圧縮・リサイズ（無料・アップロード不要）｜JPG・PNG・WebPを一括で軽く | サクッと便利ツール</title>
+<meta name="description" content="画像の容量をブラウザだけで圧縮・リサイズ。サーバーにアップロードしないので安心。複数枚の一括処理、JPG・PNG・WebPに対応。メール添付や応募フォームの容量制限に。">
+<link rel="stylesheet" href="../../style.css">
+<style>
+.drop { border: 2px dashed var(--border); border-radius: 14px; padding: 28px 16px; text-align: center; cursor: pointer; }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.items { display: grid; gap: 10px; margin-top: 16px; }
+.item { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center; background: var(--accent-soft); border-radius: 10px; padding: 10px; }
+.item img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; background: var(--bg); }
+.item .name { font-size: 0.85rem; word-break: break-all; }
+.item .size { font-size: 0.85rem; color: var(--muted); }
+.item .down { color: var(--accent); font-weight: 700; }
+.item a { font-weight: 600; white-space: nowrap; }
+input[type=range] { padding: 0; }
+</style>
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>画像圧縮・リサイズ</h1>
+  <p class="lead">画像の容量を小さくします。<strong>画像はサーバーに送信されず、お使いの端末の中だけで処理されます。</strong></p>
+
+  <div class="card">
+    <label class="drop" id="drop" for="file">📷 ここをタップして画像を選ぶ<br><span class="lead">（パソコンならドラッグ＆ドロップもOK・複数枚可）</span></label>
+    <input type="file" id="file" accept="image/*" multiple hidden>
+
+    <div class="row2">
+      <div>
+        <label for="maxw">最大の幅・高さ（px）</label>
+        <select id="maxw">
+          <option value="0">変えない</option>
+          <option value="3840">3840（4K）</option>
+          <option value="1920" selected>1920（フルHD）</option>
+          <option value="1280">1280</option>
+          <option value="800">800</option>
+          <option value="400">400</option>
+        </select>
+      </div>
+      <div>
+        <label for="fmt">保存形式</label>
+        <select id="fmt">
+          <option value="image/jpeg" selected>JPG（写真向き）</option>
+          <option value="image/webp">WebP（さらに軽い）</option>
+          <option value="image/png">PNG（劣化なし・重め）</option>
+        </select>
+      </div>
+    </div>
+    <label for="q">画質：<span id="qv">80</span>%（下げるほど軽くなる）</label>
+    <input type="range" id="q" min="10" max="100" value="80">
+
+    <div class="result" id="summary" hidden>
+      <div><span class="num" id="before">-</span><span class="lbl">圧縮前の合計</span></div>
+      <div><span class="num" id="after">-</span><span class="lbl">圧縮後の合計</span></div>
+      <div><span class="num" id="rate">-</span><span class="lbl">削減できた容量</span></div>
+    </div>
+    <div class="items" id="items"></div>
+    <button id="all" hidden>すべてダウンロード</button>
+  </div>
+
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+
+  <h2>使い方</h2>
+  <p>「画像を選ぶ」を押して画像を選ぶと、すぐに圧縮されます。画質や最大サイズを変えると、自動でやり直します。仕上がりを確認して「保存」を押してください。</p>
+  <p>メールに添付できない、応募フォームの「〇MB以下」に収まらない、スマホの容量を空けたい、ブログの表示を速くしたい、といったときに便利です。</p>
+
+  <h2>よくある質問</h2>
+  <p><strong>Q. 画像はどこかに送信されますか？</strong><br>いいえ。圧縮はすべてお使いのブラウザの中で行われ、画像がインターネット上に送信されることはありません。</p>
+  <p><strong>Q. どれくらい小さくなりますか？</strong><br>スマホで撮った写真（3〜5MB程度）なら、最大1920px・画質80%で数百KB程度になることが多いです。画像によって変わります。</p>
+  <p><strong>Q. JPGとWebP、どちらがいいですか？</strong><br>どこでも使えるのはJPGです。WebPは同じ画質でより軽くなりますが、古いソフトでは開けないことがあります。</p>
+  <p><strong>Q. 透明な部分がある画像は？</strong><br>JPGは透明を扱えないため、透明な部分は白になります。透明を残したい場合はPNGかWebPを選んでください。</p>
+  <p><strong>Q. 写真の位置情報（Exif）はどうなりますか？</strong><br>圧縮した画像には、撮影場所などのExif情報は含まれません。SNSに載せる前の位置情報の削除にも使えます。</p>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · © サクッと便利ツール</footer>
+<script>
+const $ = id => document.getElementById(id);
+let files = [], results = [];
+const kb = b => b >= 1048576 ? (b / 1048576).toFixed(2) + 'MB' : Math.max(1, Math.round(b / 1024)) + 'KB';
+const ext = { 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/png': 'png' };
+
+async function compressOne(file) {
+  const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  const max = Number($('maxw').value);
+  let w = bmp.width, h = bmp.height;
+  if (max > 0 && Math.max(w, h) > max) { const s = max / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const ctx = c.getContext('2d');
+  const fmt = $('fmt').value;
+  if (fmt === 'image/jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); }
+  ctx.drawImage(bmp, 0, 0, w, h);
+  bmp.close && bmp.close();
+  const blob = await new Promise(r => c.toBlob(r, fmt, Number($('q').value) / 100));
+  const base = file.name.replace(/\.[^.]+$/, '');
+  return { name: `${base}_compressed.${ext[fmt]}`, blob, before: file.size, w, h };
+}
+
+let runId = 0;
+async function run() {
+  if (!files.length) return;
+  const id = ++runId;
+  $('items').innerHTML = '<p class="lead">処理中…</p>';
+  const out = [], used = {};
+  for (const f of files) {
+    let r;
+    try { r = await compressOne(f); } catch (e) { r = { name: f.name, error: true, before: f.size }; }
+    if (id !== runId) return;
+    if (!r.error) {
+      if (used[r.name]) { used[r.name]++; r.name = r.name.replace(/(\.[^.]+)$/, `_${used[r.name]}$1`); } else used[r.name] = 1;
+      r.url = URL.createObjectURL(r.blob);
+    }
+    out.push(r);
+  }
+  results.forEach(r => r.url && URL.revokeObjectURL(r.url));
+  results = out;
+  render();
+}
+
+function render() {
+  $('items').innerHTML = results.map((r, i) => r.error
+    ? `<div class="item"><div></div><div class="name">${r.name}<br><span class="size">この画像は読み込めませんでした</span></div><div></div></div>`
+    : `<div class="item"><img src="${r.url}" alt=""><div><div class="name">${r.name}</div><div class="size">${kb(r.before)} → <span class="down">${kb(r.blob.size)}</span>（${r.w}×${r.h}）</div></div><a href="${r.url}" download="${r.name}">保存</a></div>`).join('');
+  const ok = results.filter(r => !r.error);
+  const b = ok.reduce((s, r) => s + r.before, 0), a = ok.reduce((s, r) => s + r.blob.size, 0);
+  $('summary').hidden = !ok.length; $('all').hidden = ok.length < 2;
+  $('before').textContent = kb(b); $('after').textContent = kb(a);
+  $('rate').textContent = b ? Math.round((1 - a / b) * 100) + '%' : '-';
+}
+
+function setFiles(list) { files = [...list].filter(f => f.type.startsWith('image/')); run(); }
+$('file').addEventListener('change', e => setFiles(e.target.files));
+const drop = $('drop');
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => setFiles(e.dataTransfer.files));
+$('q').addEventListener('input', () => { $('qv').textContent = $('q').value; });
+$('q').addEventListener('change', run);
+['maxw', 'fmt'].forEach(id => $(id).addEventListener('change', run));
+$('all').onclick = async () => {
+  for (const r of results.filter(r => !r.error)) {
+    const a = document.createElement('a'); a.href = r.url; a.download = r.name; document.body.appendChild(a); a.click(); a.remove();
+    await new Promise(res => setTimeout(res, 300));
+  }
+};
+</script>
+</body>
+</html>
