@@ -8,9 +8,10 @@
 <link rel="stylesheet" href="../../style.css">
 <style>
 .subs { display: grid; gap: 8px; margin-top: 12px; }
-.sub { display: grid; grid-template-columns: auto 1fr 110px auto; gap: 8px; align-items: center; }
+.sub { display: grid; grid-template-columns: auto 1fr 88px auto; gap: 6px; align-items: center; }
+.sub input[type=text] { min-width: 0; }
 .sub input[type=checkbox] { width: 20px; height: 20px; }
-.sub input { padding: 8px 10px; }
+.sub input { padding: 8px; }
 .sub .del { margin: 0; padding: 6px 10px; background: var(--card); color: var(--muted); border: 1px solid var(--border); }
 .sub.off input[type=text] { text-decoration: line-through; color: var(--muted); }
 .cycle { font-size: 0.8rem; color: var(--muted); }
@@ -76,7 +77,7 @@ function render() {
   $('subs').innerHTML = subs.map((s, i) => `<div class="sub ${s.on ? '' : 'off'}" data-i="${i}">
     <input type="checkbox" ${s.on ? 'checked' : ''} data-k="on" aria-label="契約中">
     <input type="text" value="${esc(s.name)}" data-k="name" placeholder="サービス名">
-    <input type="number" value="${s.price ?? ''}" data-k="price" placeholder="月額（円）" inputmode="numeric" min="0">
+    <input type="number" value="${s.price ?? ''}" data-k="price" placeholder="月額" inputmode="numeric" min="0">
     <button class="del" data-k="del" aria-label="削除">✕</button></div>`).join('');
   total();
 }
