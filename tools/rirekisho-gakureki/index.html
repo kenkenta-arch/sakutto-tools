@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>履歴書の学歴 入学・卒業年 早見表｜生年月日から自動計算（和暦・西暦） | サクッと便利ツール</title>
+<meta name="description" content="生年月日を入れるだけで、履歴書に書く小学校・中学校・高校・大学・専門学校の入学年と卒業年を和暦・西暦で自動計算。早生まれ、浪人・留年にも対応。">
+<link rel="stylesheet" href="../../style.css">
+<style>
+table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.95rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 10px 6px; text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
+td.y { font-weight: 700; white-space: nowrap; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.toggle { display: flex; gap: 8px; margin-top: 12px; }
+.toggle button { margin-top: 0; flex: 1; }
+</style>
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>履歴書の学歴 入学・卒業年 早見表</h1>
+  <p class="lead">生年月日を入れるだけで、履歴書の学歴欄に書く年と月がわかります。</p>
+
+  <div class="card">
+    <label for="birth">生年月日</label>
+    <input type="date" id="birth" value="2000-04-15">
+    <div class="row2">
+      <div><label for="ronin">浪人した年数</label><input type="number" id="ronin" value="0" min="0" max="10" inputmode="numeric"></div>
+      <div><label for="ryunen">大学で留年した年数</label><input type="number" id="ryunen" value="0" min="0" max="10" inputmode="numeric"></div>
+    </div>
+    <div class="toggle">
+      <button id="btnWareki">和暦で表示</button>
+      <button id="btnSeireki" class="secondary">西暦で表示</button>
+    </div>
+    <p class="lead" id="note"></p>
+    <table>
+      <thead><tr><th>学校</th><th>入学</th><th>卒業</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+
+  <h2>履歴書の学歴欄の書き方</h2>
+  <p>学歴欄は、1行目の中央に「学歴」と書き、その下に古い順に書きます。一般的には「中学校卒業」から書き始め、高校からは入学と卒業の両方を書きます。学校名は「〇〇高校」と略さず、「〇〇県立〇〇高等学校」のように正式名称で書きましょう。</p>
+  <p>年の表記は、和暦か西暦のどちらかに統一します。職歴欄や日付欄とも合わせると、読みやすい履歴書になります。</p>
+
+  <h2>早生まれとは？</h2>
+  <p>1月1日から4月1日までに生まれた人のことです。同じ年に生まれた4月2日以降の人より、1年早く小学校に入学します。このツールは、生年月日から自動で判定して計算します。4月1日生まれの人も早生まれになります。</p>
+
+  <h2>よくある質問</h2>
+  <p><strong>Q. 大学院や短大の年はどうなりますか？</strong><br>短大・専門学校（2年制）は高校卒業後に入学した場合、大学院（修士課程）は4年制大学を卒業してすぐ進学した場合で計算しています。</p>
+  <p><strong>Q. 「令和元年」と「令和1年」どちらで書けばいいですか？</strong><br>どちらでも間違いではありませんが、履歴書では「令和元年」と書くのが一般的です。このツールも「元年」で表示しています。</p>
+  <p><strong>Q. 2019年4月の入学は「平成31年」ですか、「令和元年」ですか？</strong><br>令和は2019年5月1日からなので、2019年4月の入学は「平成31年4月」です。</p>
+  <p><strong>Q. 計算結果は必ず正しいですか？</strong><br>一般的な日本の学校制度（4月入学・3月卒業）で計算しています。海外の学校、飛び級、編入、中退などがある場合は、卒業証書などで実際の年を確認してください。</p>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · © サクッと便利ツール</footer>
+<script>
+const $ = id => document.getElementById(id);
+let wareki = true;
+function era(y, m) {
+  let name, n;
+  if (y > 2019 || (y === 2019 && m >= 5)) { name = '令和'; n = y - 2018; }
+  else if (y > 1989 || (y === 1989 && m >= 2)) { name = '平成'; n = y - 1988; }
+  else { name = '昭和'; n = y - 1925; }
+  return `${name}${n === 1 ? '元' : n}年`;
+}
+const fmt = (y, m) => wareki ? `${era(y, m)}${m}月` : `${y}年${m}月`;
+function calc() {
+  const v = $('birth').value; if (!v) return;
+  const [by, bm, bd] = v.split('-').map(Number);
+  const haya = bm < 4 || (bm === 4 && bd === 1);
+  const E = by + (haya ? 6 : 7);
+  const r = Math.max(0, Math.floor(Number($('ronin').value) || 0));
+  const u = Math.max(0, Math.floor(Number($('ryunen').value) || 0));
+  const rows = [
+    ['小学校', E, E + 6],
+    ['中学校', E + 6, E + 9],
+    ['高等学校', E + 9, E + 12],
+    ['大学（4年制）', E + 12 + r, E + 16 + r + u],
+    ['短大・専門学校（2年制）', E + 12 + r, E + 14 + r],
+    ['大学院（修士課程）', E + 16 + r + u, E + 18 + r + u],
+  ];
+  $('tbody').innerHTML = rows.map(([n, a, b]) => `<tr><td>${n}</td><td class="y">${fmt(a, 4)} 入学</td><td class="y">${fmt(b, 3)} 卒業</td></tr>`).join('');
+  $('note').textContent = haya ? '早生まれ（1月1日〜4月1日生まれ）として計算しています。' : '';
+}
+$('btnWareki').onclick = () => { wareki = true; $('btnWareki').className = ''; $('btnSeireki').className = 'secondary'; calc(); };
+$('btnSeireki').onclick = () => { wareki = false; $('btnSeireki').className = ''; $('btnWareki').className = 'secondary'; calc(); };
+document.querySelectorAll('input').forEach(e => e.addEventListener('input', calc));
+calc();
+</script>
+</body>
+</html>
