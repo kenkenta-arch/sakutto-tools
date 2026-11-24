@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF結合（無料・アップロード不要）｜複数のPDFを1つにまとめる | サクッと便利ツール</title>
+<meta name="description" content="複数のPDFを順番を決めて1つに結合。ファイルはサーバーに送信されず、ブラウザの中だけで処理するので安心。スマホでも使えます。登録不要・無料。">
+<link rel="stylesheet" href="../../style.css">
+<style>
+.drop { border: 2px dashed var(--border); border-radius: 14px; padding: 28px 16px; text-align: center; cursor: pointer; display: block; }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.items { display: grid; gap: 8px; margin-top: 16px; }
+.item { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; background: var(--accent-soft); border-radius: 10px; padding: 10px; }
+.item .no { font-weight: 700; color: var(--accent); text-align: center; }
+.item .name { font-size: 0.9rem; word-break: break-all; }
+.item .meta { font-size: 0.8rem; color: var(--muted); }
+.item .ops { display: flex; gap: 4px; }
+.item .ops button { margin: 0; padding: 6px 10px; background: var(--card); color: var(--text); border: 1px solid var(--border); }
+#status { margin-top: 12px; }
+</style>
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>PDF結合</h1>
+  <p class="lead">複数のPDFを1つのファイルにまとめます。<strong>ファイルはサーバーに送信されず、お使いの端末の中だけで処理されます。</strong></p>
+
+  <div class="card">
+    <label class="drop" id="drop" for="file">📄 ここをタップしてPDFを選ぶ<br><span class="lead">（複数選択OK・あとから追加もできます）</span></label>
+    <input type="file" id="file" accept="application/pdf,.pdf" multiple hidden>
+    <div class="items" id="items"></div>
+    <label for="outname">保存するファイル名</label>
+    <input type="text" id="outname" value="merged.pdf">
+    <button id="merge" disabled>結合してダウンロード</button>
+    <button id="clear" class="secondary">すべて取り消す</button>
+    <p class="lead" id="status"></p>
+  </div>
+
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+
+  <h2>使い方</h2>
+  <p>「PDFを選ぶ」を押して、まとめたいPDFを選びます。↑↓ボタンで順番を入れ替え、「結合してダウンロード」を押すと、1つのPDFとして保存されます。</p>
+  <p>見積書と請求書をまとめて送りたい、スキャンした書類を1つにしたい、申請書類を「1ファイルで提出」と指定された、といったときに便利です。</p>
+
+  <h2>よくある質問</h2>
+  <p><strong>Q. PDFはどこかに送信されますか？</strong><br>いいえ。結合はすべてお使いのブラウザの中で行われます。契約書や個人情報が入った書類でも、インターネット上に送信されることはありません。</p>
+  <p><strong>Q. パスワード付きのPDFも結合できますか？</strong><br>パスワードで保護されたPDFは結合できません。先にパスワードを解除してから使ってください。</p>
+  <p><strong>Q. 何ファイルまで結合できますか？</strong><br>上限は決めていませんが、端末のメモリを使って処理するため、合計で数百MBを超えるような大きなファイルはスマホでは失敗することがあります。</p>
+  <p><strong>Q. 結合すると画質は落ちますか？</strong><br>いいえ。ページをそのままコピーしてまとめるだけなので、文字や画像の画質は変わりません。</p>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · <a href="../../credits.html">使用しているオープンソース</a> · © サクッと便利ツール</footer>
+<script src="../../vendor/pdf-lib-1.17.1.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let list = []; // {file, pages}
+const mb = b => b >= 1048576 ? (b / 1048576).toFixed(1) + 'MB' : Math.max(1, Math.round(b / 1024)) + 'KB';
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function render() {
+  $('items').innerHTML = list.map((x, i) => `<div class="item"><div class="no">${i + 1}</div><div><div class="name">${esc(x.file.name)}</div><div class="meta">${x.error ? '⚠️ ' + x.error : x.pages + 'ページ・' + mb(x.file.size)}</div></div><div class="ops"><button data-a="up" data-i="${i}" aria-label="上へ">↑</button><button data-a="down" data-i="${i}" aria-label="下へ">↓</button><button data-a="del" data-i="${i}" aria-label="削除">✕</button></div></div>`).join('');
+  const ok = list.filter(x => !x.error);
+  $('merge').disabled = ok.length < 1;
+  $('status').textContent = ok.length ? `合計 ${ok.reduce((s, x) => s + x.pages, 0)} ページ` : '';
+}
+async function add(files) {
+  for (const file of files) {
+    if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') continue;
+    const item = { file, pages: 0 };
+    try {
+      const doc = await PDFLib.PDFDocument.load(await file.arrayBuffer());
+      item.pages = doc.getPageCount();
+    } catch (e) {
+      item.error = /encrypt/i.test(String(e)) ? 'パスワード付きのため結合できません' : 'このPDFは読み込めませんでした';
+    }
+    list.push(item);
+  }
+  render();
+}
+$('items').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const i = Number(b.dataset.i);
+  if (b.dataset.a === 'up' && i > 0) [list[i - 1], list[i]] = [list[i], list[i - 1]];
+  if (b.dataset.a === 'down' && i < list.length - 1) [list[i + 1], list[i]] = [list[i], list[i + 1]];
+  if (b.dataset.a === 'del') list.splice(i, 1);
+  render();
+});
+$('file').addEventListener('change', e => { add([...e.target.files]); e.target.value = ''; });
+const drop = $('drop');
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => add([...e.dataTransfer.files]));
+$('clear').onclick = () => { list = []; render(); };
+$('merge').onclick = async () => {
+  $('merge').disabled = true; $('status').textContent = '結合中…';
+  try {
+    const out = await PDFLib.PDFDocument.create();
+    for (const x of list.filter(x => !x.error)) {
+      const src = await PDFLib.PDFDocument.load(await x.file.arrayBuffer());
+      const pages = await out.copyPages(src, src.getPageIndices());
+      pages.forEach(p => out.addPage(p));
+    }
+    const bytes = await out.save();
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    let name = $('outname').value.trim() || 'merged.pdf';
+    if (!/\.pdf$/i.test(name)) name += '.pdf';
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    $('status').textContent = `完成：${out.getPageCount()}ページ・${mb(blob.size)}`;
+  } catch (e) {
+    $('status').textContent = '結合に失敗しました。ファイルを減らすか、別のPDFで試してください。';
+  }
+  $('merge').disabled = false;
+};
+render();
+</script>
+</body>
+</html>
