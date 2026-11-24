@@ -8,8 +8,8 @@
 <link rel="stylesheet" href="../../style.css">
 <style>
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.9rem; }
-th, td { border-bottom: 1px solid var(--border); padding: 8px 6px; text-align: right; }
+table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.85rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 8px 4px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 th:first-child, td:first-child { text-align: left; }
 th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
 .bar { height: 10px; border-radius: 5px; background: var(--accent-soft); overflow: hidden; display: flex; margin-top: 16px; }
@@ -39,7 +39,7 @@ th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
     </div>
     <div class="bar"><span class="p" id="barP"></span><span class="g" id="barG"></span></div>
     <div class="legend">■ 元本　<span style="color:#2fa36b">■</span> 増えた分</div>
-    <table><thead><tr><th>年</th><th>元本</th><th>増えた分</th><th>合計</th></tr></thead><tbody id="tbody"></tbody></table>
+    <table><thead><tr><th>経過</th><th>元本（円）</th><th>増えた分（円）</th><th>合計（円）</th></tr></thead><tbody id="tbody"></tbody></table>
   </div>
 
   <div class="ad-slot"><!-- AD_SLOT --></div>
@@ -58,7 +58,8 @@ th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
 <footer><a href="../../">ほかのツールを見る</a> · © サクッと便利ツール</footer>
 <script>
 const $ = id => document.getElementById(id);
-const yen = v => Math.round(v).toLocaleString() + '円';
+const num = v => Math.round(v).toLocaleString();
+const yen = v => num(v) + '円';
 function calc() {
   const pmt = Math.max(0, Number($('monthly').value) || 0);
   const years = Math.min(60, Math.max(1, Math.floor(Number($('years').value) || 1)));
@@ -73,7 +74,7 @@ function calc() {
   $('fv').textContent = yen(bal); $('principal').textContent = yen(p); $('gain').textContent = yen(bal - p);
   const pr = bal > 0 ? p / bal * 100 : 100;
   $('barP').style.width = pr + '%'; $('barG').style.width = (100 - pr) + '%';
-  $('tbody').innerHTML = rows.map(r => `<tr><td>${r[0]}年後</td><td>${yen(r[1])}</td><td>${yen(r[2])}</td><td><strong>${yen(r[3])}</strong></td></tr>`).join('');
+  $('tbody').innerHTML = rows.map(r => `<tr><td>${r[0]}年</td><td>${num(r[1])}</td><td>${num(r[2])}</td><td><strong>${num(r[3])}</strong></td></tr>`).join('');
 }
 document.querySelectorAll('input').forEach(e => e.addEventListener('input', calc));
 calc();
