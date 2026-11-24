@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>サブスク合計計算機｜月額・年額・10年でいくら？ムダなサブスクを見直し | サクッと便利ツール</title>
+<meta name="description" content="契約中のサブスクの月額を入れるだけで、毎月・1年・10年の合計金額を計算。使っていないサブスクを解約すると、いくら節約できるかもわかります。">
+<link rel="stylesheet" href="../../style.css">
+<style>
+.subs { display: grid; gap: 8px; margin-top: 12px; }
+.sub { display: grid; grid-template-columns: auto 1fr 110px auto; gap: 8px; align-items: center; }
+.sub input[type=checkbox] { width: 20px; height: 20px; }
+.sub input { padding: 8px 10px; }
+.sub .del { margin: 0; padding: 6px 10px; background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+.sub.off input[type=text] { text-decoration: line-through; color: var(--muted); }
+.cycle { font-size: 0.8rem; color: var(--muted); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.presets button { margin: 0; padding: 6px 10px; font-size: 0.85rem; background: var(--accent-soft); color: var(--accent); }
+</style>
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>サブスク合計計算機</h1>
+  <p class="lead">契約しているサブスクの月額を入れると、合計でいくら払っているかがわかります。</p>
+
+  <div class="card">
+    <strong>よくあるサブスクを追加</strong>
+    <div class="presets" id="presets"></div>
+    <div class="subs" id="subs"></div>
+    <button class="secondary" id="add">＋ 自由に追加</button>
+    <p class="lead" style="margin-top:12px">☑ のチェックを外すと「解約した場合」として計算します。年払いのものは12で割った金額を入れてください。</p>
+
+    <div class="result">
+      <div><span class="num" id="m">-</span><span class="lbl">毎月の合計</span></div>
+      <div><span class="num" id="y">-</span><span class="lbl">1年の合計</span></div>
+      <div><span class="num" id="y10">-</span><span class="lbl">10年の合計</span></div>
+      <div><span class="num" id="save">-</span><span class="lbl">解約で浮くお金（1年）</span></div>
+    </div>
+  </div>
+
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+
+  <h2>使い方</h2>
+  <p>上のボタンから契約しているサービスを追加して、月額を入力します。料金はプランや時期によって変わるため、ご自身の契約内容（アプリの設定画面やクレジットカードの明細）を見て入力してください。</p>
+  <p>「最近使っていないな」と思うものはチェックを外してみてください。解約すると1年でいくら浮くかがわかります。入力内容はこの端末にだけ保存され、次に開いたときも残ります。</p>
+
+  <h2>サブスクを見直すコツ</h2>
+  <p><strong>① クレジットカードの明細を見る：</strong>無料体験のまま忘れているサービスが見つかることがあります。<br>
+  <strong>② 同じジャンルが重なっていないか：</strong>動画配信や音楽配信を複数契約していないか確認しましょう。<br>
+  <strong>③ 年払いに変える：</strong>使い続けるものは、年払いにすると安くなるサービスもあります。<br>
+  <strong>④ 家族プランをまとめる：</strong>家族が別々に契約している場合、ファミリープランのほうが安くなることがあります。</p>
+
+  <h2>よくある質問</h2>
+  <p><strong>Q. 入力したサービスや金額はどこかに送信されますか？</strong><br>いいえ。計算はお使いの端末の中だけで行われ、入力内容はこの端末のブラウザにだけ保存されます。</p>
+  <p><strong>Q. 保存した内容を消したいです。</strong><br>各行の「✕」で削除できます。すべて消すと、保存された内容もなくなります。</p>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · © サクッと便利ツール</footer>
+<script>
+const $ = id => document.getElementById(id);
+const PRESETS = ['動画配信', '音楽配信', 'Amazonプライム', 'YouTube Premium', 'クラウドストレージ', 'ゲーム', '電子書籍・マンガ', 'ニュース・雑誌', 'AIツール', 'スポーツジム', 'スマホのオプション', 'フードデリバリー'];
+const KEY = 'sakutto-subs-v1';
+let subs = [];
+try { subs = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { subs = []; }
+const yen = v => Math.round(v).toLocaleString() + '円';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function save() { try { localStorage.setItem(KEY, JSON.stringify(subs)); } catch (e) {} }
+function total() {
+  const on = subs.filter(s => s.on).reduce((a, s) => a + (Number(s.price) || 0), 0);
+  const off = subs.filter(s => !s.on).reduce((a, s) => a + (Number(s.price) || 0), 0);
+  $('m').textContent = yen(on); $('y').textContent = yen(on * 12); $('y10').textContent = yen(on * 120);
+  $('save').textContent = yen(off * 12);
+  save();
+}
+function render() {
+  $('subs').innerHTML = subs.map((s, i) => `<div class="sub ${s.on ? '' : 'off'}" data-i="${i}">
+    <input type="checkbox" ${s.on ? 'checked' : ''} data-k="on" aria-label="契約中">
+    <input type="text" value="${esc(s.name)}" data-k="name" placeholder="サービス名">
+    <input type="number" value="${s.price ?? ''}" data-k="price" placeholder="月額（円）" inputmode="numeric" min="0">
+    <button class="del" data-k="del" aria-label="削除">✕</button></div>`).join('');
+  total();
+}
+$('subs').addEventListener('input', e => {
+  const row = e.target.closest('.sub'); if (!row) return;
+  const s = subs[Number(row.dataset.i)], k = e.target.dataset.k;
+  if (k === 'on') { s.on = e.target.checked; row.classList.toggle('off', !s.on); }
+  if (k === 'name') s.name = e.target.value;
+  if (k === 'price') s.price = e.target.value === '' ? '' : Number(e.target.value);
+  total();
+});
+$('subs').addEventListener('click', e => {
+  if (e.target.dataset.k !== 'del') return;
+  subs.splice(Number(e.target.closest('.sub').dataset.i), 1); render();
+});
+$('presets').innerHTML = PRESETS.map(p => `<button data-p="${esc(p)}">＋ ${esc(p)}</button>`).join('');
+$('presets').addEventListener('click', e => {
+  const p = e.target.dataset.p; if (!p) return;
+  subs.push({ name: p, price: '', on: true }); render();
+  const inputs = document.querySelectorAll('.sub input[data-k=price]'); inputs[inputs.length - 1].focus();
+});
+$('add').onclick = () => { subs.push({ name: '', price: '', on: true }); render(); const n = document.querySelectorAll('.sub input[data-k=name]'); n[n.length - 1].focus(); };
+render();
+</script>
+</body>
+</html>

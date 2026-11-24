@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>積立シミュレーター｜毎月〇円を〇年続けるといくら？貯金・積立の計算 | サクッと便利ツール</title>
+<meta name="description" content="毎月の積立額・想定利回り・期間を入れると、将来の金額と増えた分を計算。利回り0%にすれば普通の貯金の計算にも使えます。年ごとの推移表つき。">
+<link rel="stylesheet" href="../../style.css">
+<style>
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 8px 6px; text-align: right; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
+.bar { height: 10px; border-radius: 5px; background: var(--accent-soft); overflow: hidden; display: flex; margin-top: 16px; }
+.bar span { display: block; height: 100%; }
+.bar .p { background: var(--accent); }
+.bar .g { background: #2fa36b; }
+.legend { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+</style>
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>積立シミュレーター</h1>
+  <p class="lead">毎月コツコツ積み立てると、将来いくらになるかを計算します。</p>
+
+  <div class="card">
+    <div class="row2">
+      <div><label for="monthly">毎月の積立額（円）</label><input type="number" id="monthly" value="10000" min="0" inputmode="numeric"></div>
+      <div><label for="years">積み立てる年数</label><input type="number" id="years" value="20" min="1" max="60" inputmode="numeric"></div>
+      <div><label for="rate">想定の年利（%）</label><input type="number" id="rate" value="3" step="0.1" min="0" max="20" inputmode="decimal"></div>
+      <div><label for="initial">最初にある金額（円）</label><input type="number" id="initial" value="0" min="0" inputmode="numeric"></div>
+    </div>
+    <div class="result">
+      <div><span class="num" id="fv">-</span><span class="lbl">最終的な金額</span></div>
+      <div><span class="num" id="principal">-</span><span class="lbl">積み立てた元本</span></div>
+      <div><span class="num" id="gain">-</span><span class="lbl">増えた分</span></div>
+    </div>
+    <div class="bar"><span class="p" id="barP"></span><span class="g" id="barG"></span></div>
+    <div class="legend">■ 元本　<span style="color:#2fa36b">■</span> 増えた分</div>
+    <table><thead><tr><th>年</th><th>元本</th><th>増えた分</th><th>合計</th></tr></thead><tbody id="tbody"></tbody></table>
+  </div>
+
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+
+  <h2>計算のしかた</h2>
+  <p>毎月末に積み立て、年利を12で割った利率で毎月ふくらんでいく（月複利）として計算しています。税金や手数料は含めていません。</p>
+  <p>利回りを0%にすると、普通の貯金で「毎月〇円を〇年続けるといくら貯まるか」の計算になります。</p>
+
+  <h2>注意してほしいこと</h2>
+  <p>この計算は、毎年同じ利回りが続いたと仮定した<strong>理論上の数字</strong>です。実際の投資では、値上がりする年も値下がりする年もあり、元本を下回ることもあります。将来の結果を約束するものではありません。投資をするかどうかは、ご自身で内容をよく確認したうえで判断してください。</p>
+
+  <h2>よくある質問</h2>
+  <p><strong>Q. 年利は何%を入れればいいですか？</strong><br>決まった正解はありません。銀行の預金なら金利の数字を、投資の場合は控えめな数字を入れて、何パターンか比べてみるのがおすすめです。</p>
+  <p><strong>Q. 「複利」とは？</strong><br>増えた分にもさらに利息がつく仕組みです。期間が長いほど、増えた分が大きくなります。</p>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · © サクッと便利ツール</footer>
+<script>
+const $ = id => document.getElementById(id);
+const yen = v => Math.round(v).toLocaleString() + '円';
+function calc() {
+  const pmt = Math.max(0, Number($('monthly').value) || 0);
+  const years = Math.min(60, Math.max(1, Math.floor(Number($('years').value) || 1)));
+  const i = Math.max(0, Number($('rate').value) || 0) / 100 / 12;
+  const init = Math.max(0, Number($('initial').value) || 0);
+  let bal = init, rows = [];
+  for (let m = 1; m <= years * 12; m++) {
+    bal = bal * (1 + i) + pmt;
+    if (m % 12 === 0) { const p = init + pmt * m; rows.push([m / 12, p, bal - p, bal]); }
+  }
+  const p = init + pmt * years * 12;
+  $('fv').textContent = yen(bal); $('principal').textContent = yen(p); $('gain').textContent = yen(bal - p);
+  const pr = bal > 0 ? p / bal * 100 : 100;
+  $('barP').style.width = pr + '%'; $('barG').style.width = (100 - pr) + '%';
+  $('tbody').innerHTML = rows.map(r => `<tr><td>${r[0]}年後</td><td>${yen(r[1])}</td><td>${yen(r[2])}</td><td><strong>${yen(r[3])}</strong></td></tr>`).join('');
+}
+document.querySelectorAll('input').forEach(e => e.addEventListener('input', calc));
+calc();
+</script>
+</body>
+</html>
