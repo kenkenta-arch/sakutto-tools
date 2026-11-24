@@ -15,3 +15,27 @@
 - 日本から報酬を受け取れるか、手数料
 - 日本語の切り抜きで問題ないか（説明文に言語の制限は書かれていない）
 - 参加後に見られる素材とルールの全文
+
+## 2026-11-24 夜：SEGA Metaphor のルール（参加後に確認）
+- 視聴者条件：**アメリカの視聴者が50%以上**（アカウント全体か、その投稿のどちらかで満たせばよい）→ 日本語版では満たせない。英語版で狙う
+- 素材：公式トレーラー2本（Heismay Character Trailer / Launch Trailer）。素材フォルダは参加者用のリンク（Frame.io）
+- 投稿先：TikTok・Instagram Reels・YouTube Shorts（専用アカウントでなくてよい）
+- 説明文：#Ad / #Advertisement / #Sponsored のどれかが必須。自分の言葉で、事実だけ（数字・日付を作らない）、他の人のコピー禁止
+- 禁止：過激な内容
+- 報酬：最大$2/1,000再生（パキスタン・インド・バングラデシュと「国のデータなし」は対象外）、1本 最低$2〜最大$800
+
+### 英語の説明文の案（キャンペーンの説明に書かれた事実だけを使う）
+1. Heismay doesn't waste a single move. Metaphor: ReFantazio character trailer #Ad #MetaphorReFantazio #Atlus #JRPG
+2. The launch trailer for Metaphor: ReFantazio gave me chills #Ad #MetaphorReFantazio #SEGA #JRPG
+3. This is the moment Heismay steps in 👀 #Ad #MetaphorReFantazio #Atlus #gaming
+4. Metaphor: ReFantazio is out now on Nintendo Switch 2 — here's why fans are hyped #Ad #MetaphorReFantazio #NintendoSwitch2
+5. Rewatching the Metaphor: ReFantazio launch trailer frame by frame #Ad #MetaphorReFantazio #JRPG #gamingclips
+※ 4は、キャンペーンの説明文の例にある事実をそのまま使っている。それ以外の発売日・機種・数字は書かない
+
+## 英語版アカウントのプロフィール案
+- 表示名：GAME MOMENTS
+- @ID：game_moments（取れなければ game_moments_en）
+- YouTube 説明：The best moments from the games everyone is talking about. Daily Shorts: trailers, highlights and news — every clip with a quick take from a Japanese gamer. 🇯🇵🎮
+- Instagram 名前：GAME MOMENTS | Gaming Clips（名前欄は検索対象）
+- Instagram 自己紹介：🎮 The best moments from the games everyone's talking about / Daily trailers • highlights • news / 🇯🇵 Clipped by a Japanese gamer
+- TikTok 自己紹介（80文字以内）：🎮 Daily game moments & trailers / 🇯🇵 Japanese gamer's take / Follow for more
