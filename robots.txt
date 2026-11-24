@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://kenkenta-arch.github.io/sakutto-tools/sitemap.xml
