@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>文字数カウント（無料・リアルタイム）| サクッと便利ツール</title>
+<meta name="description" content="貼り付けるだけで文字数をリアルタイムでカウント。空白・改行なしの文字数、行数、原稿用紙換算、X（旧Twitter）の残り文字数もわかります。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>文字数カウント</h1>
+  <p class="lead">文章を入力・貼り付けると、リアルタイムで文字数を数えます。</p>
+  <div class="card">
+    <label for="text">文章</label>
+    <textarea id="text" placeholder="ここに文章を貼り付けてください"></textarea>
+    <div class="result">
+      <div><span class="num" id="all">0</span><span class="lbl">文字数（空白含む・改行除く）</span></div>
+      <div><span class="num" id="nospace">0</span><span class="lbl">空白・改行なし</span></div>
+      <div><span class="num" id="lines">0</span><span class="lbl">行数</span></div>
+      <div><span class="num" id="genko">0</span><span class="lbl">原稿用紙（400字）換算・枚</span></div>
+      <div><span class="num" id="x">140</span><span class="lbl">Xの残り（全角140字換算）</span></div>
+    </div>
+    <button class="secondary" id="clear">クリア</button>
+  </div>
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+  <h2>使い方</h2>
+  <p>入力欄に文章を貼り付けるだけで、文字数が自動で表示されます。レポートや作文、ブログ記事、SNSの投稿文、履歴書の志望動機など、文字数の指定がある文章を書くときに便利です。</p>
+  <h2>よくある質問</h2>
+  <p><strong>Q. 絵文字はどう数えますか？</strong><br>見た目どおり1文字として数えます（結合した絵文字も1文字）。</p>
+  <p><strong>Q. 原稿用紙換算はどうやって計算していますか？</strong><br>空白・改行を除いた文字数を400で割り、切り上げています。実際の原稿用紙では改行やマス目の使い方で枚数が変わるため、目安として使ってください。</p>
+  <p><strong>Q. 入力した文章は保存されますか？</strong><br>いいえ。計算はすべてお使いの端末の中で行われ、どこにも送信されません。</p>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · © サクッと便利ツール</footer>
+<script>
+const t = document.getElementById('text');
+const seg = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter('ja', { granularity: 'grapheme' }) : null;
+const count = s => seg ? [...seg.segment(s)].length : [...s].length;
+function update() {
+  const v = t.value;
+  const all = count(v.replace(/\r\n/g, '\n').replace(/\n/g, ''));
+  const nospace = count(v.replace(/\s/g, ''));
+  document.getElementById('all').textContent = all;
+  document.getElementById('nospace').textContent = nospace;
+  document.getElementById('lines').textContent = v === '' ? 0 : v.split(/\r\n|\n/).length;
+  document.getElementById('genko').textContent = Math.ceil(nospace / 400);
+  document.getElementById('x').textContent = 140 - count(v);
+}
+t.addEventListener('input', update);
+document.getElementById('clear').onclick = () => { t.value = ''; update(); t.focus(); };
+</script>
+</body>
+</html>

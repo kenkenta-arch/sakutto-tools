@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>割り勘計算｜端数・多めに払う人にも対応 | サクッと便利ツール</title>
+<meta name="description" content="飲み会や旅行の割り勘を一瞬で計算。100円単位・1000円単位の切り上げや、上司など多めに払う人がいる場合の傾斜割り勘にも対応。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>割り勘計算</h1>
+  <p class="lead">飲み会、旅行、プレゼント代などの割り勘を計算します。</p>
+  <div class="card">
+    <label for="total">合計金額（円）</label><input type="number" id="total" value="12000" inputmode="numeric">
+    <label for="people">人数</label><input type="number" id="people" value="4" min="1" inputmode="numeric">
+    <label for="unit">支払いの単位</label>
+    <select id="unit">
+      <option value="1">1円単位</option>
+      <option value="10">10円単位</option>
+      <option value="100" selected>100円単位</option>
+      <option value="500">500円単位</option>
+      <option value="1000">1000円単位</option>
+    </select>
+    <label for="big">多めに払う人の人数（いなければ0）</label><input type="number" id="big" value="0" min="0" inputmode="numeric">
+    <label for="ratio">多めに払う人は普通の人の何倍？</label><input type="number" id="ratio" value="1.5" step="0.1" min="1">
+    <div class="result">
+      <div><span class="num" id="normal">-</span><span class="lbl">1人あたり（円）</span></div>
+      <div><span class="num" id="bigpay">-</span><span class="lbl">多めに払う人（円）</span></div>
+      <div><span class="num" id="diffv">-</span><span class="lbl">集めた額との差（円）</span></div>
+    </div>
+    <p id="note" class="lead"></p>
+  </div>
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+  <h2>使い方</h2>
+  <p>合計金額と人数を入れるだけで、1人あたりの金額がわかります。「100円単位」などを選ぶと、お釣りが出にくいように切り上げて計算します。集めすぎた分は「集めた額との差」に表示されるので、幹事さんの調整に使えます。</p>
+  <h2>傾斜割り勘とは？</h2>
+  <p>上司や先輩など、一部の人が多めに払う割り勘のことです。「多めに払う人の人数」と「何倍払うか」を入れると自動で計算します。</p>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · © サクッと便利ツール</footer>
+<script>
+const $ = id => document.getElementById(id);
+function calc() {
+  const total = Number($('total').value), n = Math.floor(Number($('people').value));
+  const unit = Number($('unit').value), big = Math.min(Math.floor(Number($('big').value)), n), r = Number($('ratio').value) || 1;
+  if (!(total > 0) || !(n >= 1)) return;
+  const weight = (n - big) + big * r;
+  const ceil = v => Math.ceil(v / unit) * unit;
+  const normal = ceil(total / weight);
+  const bigpay = big > 0 ? ceil(total / weight * r) : 0;
+  const collected = normal * (n - big) + bigpay * big;
+  $('normal').textContent = n - big > 0 ? normal.toLocaleString() : '-';
+  $('bigpay').textContent = big > 0 ? bigpay.toLocaleString() : '-';
+  $('diffv').textContent = '+' + (collected - total).toLocaleString();
+  $('note').textContent = `合計 ${collected.toLocaleString()}円 集まります。`;
+}
+document.querySelectorAll('input,select').forEach(e => e.addEventListener('input', calc));
+calc();
+</script>
+</body>
+</html>
