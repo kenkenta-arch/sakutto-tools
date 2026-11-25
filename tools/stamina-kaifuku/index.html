@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>スタミナ回復時間計算｜満タンになる時刻・寝ている間のあふれもわかる | サクッと便利ツール</title>
+<meta name="description" content="ゲームのスタミナ（体力・行動力・樹脂など）が満タンになる時刻を計算。今の値・上限・1回復の時間を入れるだけ。指定した値になる時刻や、寝ている間にあふれる量もわかります。どのゲームでも使えます。">
+<link rel="stylesheet" href="../../style.css">
+<style>
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chips button { margin: 0; padding: 6px 12px; font-size: 0.85rem; background: var(--accent-soft); color: var(--accent); }
+.warn { color: #c0392b; font-weight: 600; }
+</style>
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>スタミナ回復時間計算</h1>
+  <p class="lead">ゲームのスタミナが満タンになる時刻を計算します。どのゲームでも使えます。</p>
+
+  <div class="card">
+    <div class="row2">
+      <div><label for="cur">今のスタミナ</label><input type="number" id="cur" value="40" min="0" inputmode="numeric"></div>
+      <div><label for="max">上限（満タンの値）</label><input type="number" id="max" value="160" min="1" inputmode="numeric"></div>
+    </div>
+    <label for="mins">1回復するのにかかる時間（分）</label>
+    <input type="number" id="mins" value="8" min="0.1" step="0.5" inputmode="decimal">
+    <div class="chips" id="chips"></div>
+    <label for="next">次の1回復までの残り時間（分・わからなければ空欄）</label>
+    <input type="number" id="next" placeholder="例：3" min="0" step="0.5" inputmode="decimal">
+
+    <div class="result">
+      <div><span class="num" id="full">-</span><span class="lbl">満タンになる時刻</span></div>
+      <div><span class="num" id="left">-</span><span class="lbl">満タンまでの時間</span></div>
+    </div>
+    <p id="note" class="lead"></p>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">〇〇まで回復するのはいつ？</h2>
+    <label for="target">目標のスタミナ</label>
+    <input type="number" id="target" value="120" min="0" inputmode="numeric">
+    <div class="result"><div><span class="num" id="tAt">-</span><span class="lbl">目標になる時刻</span></div><div><span class="num" id="tLeft">-</span><span class="lbl">それまでの時間</span></div></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">寝ている間にあふれない？</h2>
+    <label for="sleep">これから何時間後にゲームを開く？（例：寝る時間）</label>
+    <input type="number" id="sleep" value="8" min="0" step="0.5" inputmode="decimal">
+    <div class="result"><div><span class="num" id="sAt">-</span><span class="lbl">そのときのスタミナ</span></div><div><span class="num" id="sWaste">-</span><span class="lbl">あふれて無駄になる量</span></div></div>
+    <p id="sNote" class="lead"></p>
+  </div>
+
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+
+  <h2>使い方</h2>
+  <p>今のスタミナ、上限、1回復にかかる時間（分）を入れると、満タンになる時刻がわかります。ゲームによって「スタミナ」「体力」「行動力」「AP」「樹脂」など呼び方は違いますが、時間で1ずつ回復するものならどれでも計算できます。1回復の時間はゲームのヘルプやお知らせで確認してください。</p>
+  <p>次の1回復までの残り時間がわかる場合は入れると、より正確になります。空欄のときは、今ちょうど回復したばかりとして計算します。</p>
+
+  <h2>よくある質問</h2>
+  <p><strong>Q. 上限を超えてスタミナを持っているときは？</strong><br>多くのゲームでは、上限を超えている間は時間で回復しません。上限より少なくなってから回復が始まります。</p>
+  <p><strong>Q. 寝ている間にあふれる量は、どう計算していますか？</strong><br>指定した時間で回復する量から、上限までの空きを引いた分を「あふれる量」としています。寝る前にスタミナを使い切っておくと、無駄を減らせます。</p>
+  <p><strong>Q. 時刻はどこの時間ですか？</strong><br>お使いの端末の時計（現在時刻）をもとに計算しています。</p>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · © サクッと便利ツール</footer>
+<script>
+const $ = id => document.getElementById(id);
+[3, 5, 6, 8, 10].forEach(m => { const b = document.createElement('button'); b.textContent = m + '分'; b.onclick = () => { $('mins').value = m; calc(); }; $('chips').appendChild(b); });
+const W = ['日','月','火','水','木','金','土'];
+function fmtAt(ms) {
+  const d = new Date(Date.now() + ms), n = new Date();
+  const day = d.toDateString() === n.toDateString() ? '今日' : (new Date(n.getTime() + 864e5).toDateString() === d.toDateString() ? '明日' : `${d.getMonth() + 1}/${d.getDate()}（${W[d.getDay()]}）`);
+  return `${day} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+function fmtDur(min) {
+  const t = Math.ceil(min); if (t <= 0) return '0分';
+  const h = Math.floor(t / 60), m = t % 60;
+  return (h ? h + '時間' : '') + (m ? m + '分' : '');
+}
+// minutes until stamina reaches v (v <= max)
+function minsTo(v, cur, iv, first) { const need = v - cur; if (need <= 0) return 0; return first + (need - 1) * iv; }
+function calc() {
+  const cur = Math.floor(Number($('cur').value)), max = Math.floor(Number($('max').value)), iv = Number($('mins').value);
+  if ($('cur').value === '' || !(max >= 1) || !(iv > 0) || !(cur >= 0)) { ['full','left','tAt','tLeft','sAt','sWaste'].forEach(i => $(i).textContent = '-'); $('note').textContent = ''; $('sNote').textContent = ''; return; }
+  const nx = $('next').value === '' ? iv : Math.min(Math.max(Number($('next').value), 0), iv);
+  $('note').innerHTML = '';
+  if (cur >= max) {
+    $('full').textContent = '満タンです'; $('left').textContent = '0分';
+    if (cur > max) $('note').innerHTML = '<span class="warn">上限を超えています。上限より少なくなるまで回復しません。</span>';
+  } else {
+    const m = minsTo(max, cur, iv, nx);
+    $('full').textContent = fmtAt(m * 60000); $('left').textContent = fmtDur(m);
+  }
+  const tg = Math.floor(Number($('target').value));
+  if (tg > max) { $('tAt').textContent = '上限より上'; $('tLeft').textContent = '-'; }
+  else if (tg <= cur) { $('tAt').textContent = 'もう届いています'; $('tLeft').textContent = '0分'; }
+  else { const m = minsTo(tg, cur, iv, nx); $('tAt').textContent = fmtAt(m * 60000); $('tLeft').textContent = fmtDur(m); }
+  const sl = Number($('sleep').value) * 60;
+  const gained = cur >= max ? 0 : (sl < nx ? 0 : 1 + Math.floor((sl - nx) / iv));
+  const room = Math.max(max - cur, 0);
+  const at = cur >= max ? cur : Math.min(cur + gained, max);
+  const waste = Math.max(gained - room, 0);
+  $('sAt').textContent = at + ' / ' + max; $('sWaste').textContent = waste;
+  $('sNote').textContent = waste > 0 ? `あと${waste}以上、寝る前に使っておくと無駄がありません。` : 'あふれません。';
+}
+document.querySelectorAll('input').forEach(e => e.addEventListener('input', calc));
+calc();
+</script>
+</body>
+</html>
