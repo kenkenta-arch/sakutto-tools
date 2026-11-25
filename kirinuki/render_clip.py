@@ -63,6 +63,8 @@ def ass_time(x):
 
 
 def wrap(text, max_chars):
+    if "\n" in text:  # 改行の位置を指定したときは、そのとおりに改行する
+        return r"\N".join(t.strip() for t in text.split("\n"))
     if re.search(r"[぀-ヿ一-鿿]", text):
         return r"\N".join(text[i:i + max_chars] for i in range(0, len(text), max_chars))
     words, lines, cur = text.split(), [], ""
