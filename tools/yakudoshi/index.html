@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>厄年チェッカー 2027年（令和9年）｜生年月日で前厄・本厄・後厄がすぐわかる | サクッと便利ツール</title>
+<meta name="description" content="生年月日と性別を入れるだけで、2027年（令和9年）に厄年かどうかを判定。前厄・本厄・後厄、大厄、次の厄年もわかります。数え年で自動計算、男女別の厄年早見表つき。">
+<link rel="stylesheet" href="../../style.css">
+<style>
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.verdict { margin-top: 16px; padding: 16px; border-radius: 12px; background: var(--accent-soft); }
+.verdict .big { font-size: 1.6rem; font-weight: 700; display: block; }
+.verdict.hon { background: #fde8e8; color: #8a1c1c; }
+.verdict.mae, .verdict.ato { background: #fff4d6; color: #6b4e00; }
+@media (prefers-color-scheme: dark) {
+  .verdict.hon { background: #4a1d1d; color: #ffd6d6; }
+  .verdict.mae, .verdict.ato { background: #4a3c12; color: #ffe9a8; }
+}
+.radio { display: flex; gap: 16px; margin-top: 6px; }
+.radio label { display: flex; align-items: center; gap: 6px; font-weight: 400; margin: 0; }
+.radio input { width: auto; }
+table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 8px 4px; text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
+td.hon { font-weight: 700; }
+</style>
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>厄年チェッカー</h1>
+  <p class="lead">生年月日と性別を入れると、その年に厄年かどうかがすぐわかります。</p>
+
+  <div class="card">
+    <label for="birth">生年月日</label>
+    <input type="date" id="birth" value="1995-06-15">
+    <label>性別</label>
+    <div class="radio">
+      <label><input type="radio" name="sex" value="m"> 男性</label>
+      <label><input type="radio" name="sex" value="f" checked> 女性</label>
+    </div>
+    <label for="year">調べる年</label>
+    <select id="year"></select>
+    <label style="font-weight:400"><input type="checkbox" id="risshun" style="width:auto"> 1月1日〜2月3日生まれは前の年の生まれとして数える（立春で区切る神社の場合）</label>
+    <div class="verdict" id="verdict"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0" id="tableTitle">厄年早見表</h2>
+    <h3 style="margin-bottom:0">男性</h3>
+    <table><thead><tr><th>数え年</th><th>前厄</th><th>本厄</th><th>後厄</th></tr></thead><tbody id="tm"></tbody></table>
+    <h3 style="margin-bottom:0">女性</h3>
+    <table><thead><tr><th>数え年</th><th>前厄</th><th>本厄</th><th>後厄</th></tr></thead><tbody id="tf"></tbody></table>
+    <p class="lead" style="margin-top:12px">表の年は「生まれた年」です。太字は大厄（とくに注意が必要とされる年）。</p>
+  </div>
+
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+
+  <h2>厄年とは</h2>
+  <p>厄年は、災いが起こりやすいとされる年齢のことで、昔から厄払い（厄除け）をする風習があります。一般的に、男性は数え年で25歳・42歳・61歳、女性は19歳・33歳・37歳・61歳が本厄とされ、その前の年を「前厄」、後の年を「後厄」と呼びます。男性の42歳と女性の33歳は「大厄」と呼ばれます。</p>
+
+  <h2>数え年の数え方</h2>
+  <p>厄年は「数え年」で数えます。数え年は、生まれた年を1歳とし、元日（1月1日）を迎えるたびに1歳ずつ増やす数え方です。誕生日は関係ありません。かんたんに言うと「調べる年 − 生まれた年 ＋ 1」です。満年齢より1〜2歳多くなります。</p>
+
+  <h2>よくある質問</h2>
+  <p><strong>Q. 神社やお寺によって厄年が違うのはなぜですか？</strong><br>厄年は地域や神社・お寺によって考え方が少しずつ異なります。女性の61歳を厄年に含めない所や、年の区切りを元日ではなく立春（2月4日ごろ）にする所もあります。厄払いを受ける場合は、お参りする神社・お寺の案内もあわせて確認してください。</p>
+  <p><strong>Q. 1月や2月はじめに生まれた場合はどうなりますか？</strong><br>元日で区切る数え方では、生まれた年のとおりに計算します。立春で区切る神社の場合は、上のチェックを入れると、1月1日〜2月3日生まれの人を前の年の生まれとして計算します。</p>
+  <p><strong>Q. 厄払いはいつ行けばいいですか？</strong><br>一般的には、年の初め（元日〜節分ごろ）に受ける人が多いですが、時期は神社・お寺によって異なります。</p>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · © サクッと便利ツール</footer>
+<script>
+const $ = id => document.getElementById(id);
+const YAKU = { m: [25, 42, 61], f: [19, 33, 37, 61] };
+const TAIYAKU = { m: 42, f: 33 };
+const ETO = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const eto = y => ETO[((y - 4) % 12 + 12) % 12];
+function wareki(y) {
+  if (y >= 2019) return y === 2019 ? '令和元年' : `令和${y - 2018}年`;
+  if (y >= 1989) return y === 1989 ? '平成元年' : `平成${y - 1988}年`;
+  return `昭和${y - 1925}年`;
+}
+const now = new Date().getFullYear();
+for (let y = now - 1; y <= now + 3; y++) {
+  const o = document.createElement('option'); o.value = y; o.textContent = `${y}年（${wareki(y)}）`;
+  if (y === 2027) o.selected = true;
+  $('year').appendChild(o);
+}
+if (![...$('year').options].some(o => o.selected)) $('year').value = now + 1;
+
+function birthYearOf() {
+  const v = $('birth').value; if (!v) return null;
+  const [y, m, d] = v.split('-').map(Number);
+  if ($('risshun').checked && (m === 1 || (m === 2 && d <= 3))) return y - 1;
+  return y;
+}
+function judge(kazoe, sex) {
+  for (const a of YAKU[sex]) {
+    if (kazoe === a) return { type: 'hon', age: a };
+    if (kazoe === a - 1) return { type: 'mae', age: a };
+    if (kazoe === a + 1) return { type: 'ato', age: a };
+  }
+  return null;
+}
+function calc() {
+  const Y = Number($('year').value);
+  const sex = document.querySelector('input[name=sex]:checked').value;
+  const by = birthYearOf();
+  const v = $('verdict');
+  if (by === null) { v.textContent = ''; return; }
+  const kazoe = Y - by + 1;
+  v.className = 'verdict';
+  if (kazoe < 1) { v.innerHTML = '<span class="big">まだ生まれていない年です</span>'; return; }
+  const r = judge(kazoe, sex);
+  const label = { hon: '本厄', mae: '前厄', ato: '後厄' };
+  let html;
+  if (r) {
+    const tai = r.age === TAIYAKU[sex] ? '（大厄）' : '';
+    v.classList.add(r.type);
+    html = `<span class="big">${Y}年は${label[r.type]}${r.type === 'hon' ? tai : ''}です</span>数え年 ${kazoe}歳（${r.age}歳の厄年${tai ? '・大厄' : ''}の${label[r.type]}）`;
+  } else {
+    html = `<span class="big">${Y}年は厄年ではありません</span>数え年 ${kazoe}歳`;
+  }
+  const next = YAKU[sex].map(a => a - 1).find(a => a > kazoe);
+  if (next) html += `<br>次の厄年は ${by + next - 1}年（数え年${next}歳・前厄）からです。`;
+  v.innerHTML = html;
+  renderTable(Y);
+}
+function renderTable(Y) {
+  $('tableTitle').textContent = `${Y}年（${wareki(Y)}）の厄年早見表`;
+  for (const sex of ['m', 'f']) {
+    $('t' + sex).innerHTML = YAKU[sex].map(a => {
+      const cell = k => { const y = Y - k + 1; return `${y}年<br><small>${wareki(y)}・${eto(y)}</small>`; };
+      return `<tr><td>${a}歳${a === TAIYAKU[sex] ? '（大厄）' : ''}</td><td>${cell(a - 1)}</td><td class="${a === TAIYAKU[sex] ? 'hon' : ''}">${cell(a)}</td><td>${cell(a + 1)}</td></tr>`;
+    }).join('');
+  }
+}
+document.querySelectorAll('input,select').forEach(e => e.addEventListener('input', calc));
+document.querySelectorAll('input[type=radio],input[type=checkbox]').forEach(e => e.addEventListener('change', calc));
+calc();
+</script>
+</body>
+</html>
