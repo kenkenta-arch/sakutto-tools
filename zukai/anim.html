@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 1920px; height: 1080px; overflow: hidden; background: #f5f7fb; font-family: "IPAPGothic", "IPAGothic", sans-serif; color: #1f3a5f; }
+  .scene { position: absolute; inset: 0; opacity: 0; }
+  .title { position: absolute; left: 0; right: 0; top: 110px; text-align: center; font-size: 64px; font-weight: bold; letter-spacing: 2px; }
+  .chip { position: absolute; top: 60px; left: 80px; font-size: 28px; padding: 8px 22px; border-radius: 30px; background: #1f3a5f; color: #fff; }
+  .cap { position: absolute; left: 160px; right: 160px; bottom: 70px; text-align: center; font-size: 46px; font-weight: bold; color: #1f3a5f;
+         background: rgba(255,255,255,.92); border-radius: 18px; padding: 18px 30px; box-shadow: 0 6px 24px rgba(31,58,95,.12); }
+  .card { position: absolute; background: #fff; border-radius: 28px; box-shadow: 0 10px 40px rgba(31,58,95,.12); }
+  .lbl { font-size: 36px; font-weight: bold; text-align: center; margin-top: 18px; }
+  .el { will-change: transform, opacity; }
+  .foot { position: absolute; right: 40px; bottom: 18px; font-size: 22px; color: #6b7f99; }
+</style></head>
+<body>
+<div class="chip" id="chip">自治体向け 図解アニメーション サンプル</div>
+
+<!-- Scene 1: 困りごと -->
+<div class="scene" id="sc1">
+  <div class="title el" id="t1">点検する場所は多い。<span style="color:#e76f51">人手は限られている。</span></div>
+  <div class="card el" id="c1a" style="left:250px;top:300px;width:400px;height:360px;">
+    <svg width="400" height="280" viewBox="0 0 400 280"><path d="M40 210 Q200 70 360 210" stroke="#1f3a5f" stroke-width="16" fill="none"/><rect x="30" y="205" width="340" height="18" rx="6" fill="#1f3a5f"/><rect x="95" y="150" width="14" height="60" fill="#2a9d8f"/><rect x="190" y="118" width="14" height="92" fill="#2a9d8f"/><rect x="290" y="150" width="14" height="60" fill="#2a9d8f"/></svg>
+    <div class="lbl">橋</div></div>
+  <div class="card el" id="c1b" style="left:760px;top:300px;width:400px;height:360px;">
+    <svg width="400" height="280" viewBox="0 0 400 280"><rect x="60" y="120" width="280" height="90" rx="10" fill="#6b7f99"/><rect x="80" y="160" width="50" height="10" fill="#fff"/><rect x="175" y="160" width="50" height="10" fill="#fff"/><rect x="270" y="160" width="50" height="10" fill="#fff"/></svg>
+    <div class="lbl">道路</div></div>
+  <div class="card el" id="c1c" style="left:1270px;top:300px;width:400px;height:360px;">
+    <svg width="400" height="280" viewBox="0 0 400 280"><rect x="70" y="150" width="260" height="34" rx="17" fill="#2a9d8f"/><rect x="180" y="90" width="40" height="70" rx="8" fill="#2a9d8f"/><circle cx="200" cy="225" r="16" fill="#4ea8de"/></svg>
+    <div class="lbl">水道</div></div>
+  <div class="el" id="c1d" style="position:absolute;left:760px;top:690px;width:400px;text-align:center;font-size:40px;font-weight:bold;color:#e76f51;">👷 担い手が足りない</div>
+</div>
+
+<!-- Scene 2: しくみ -->
+<div class="scene" id="sc2">
+  <div class="title el" id="t2">写真を撮るだけで、<span style="color:#2a9d8f">地図に記録</span></div>
+  <div class="card el" id="c2a" style="left:220px;top:300px;width:380px;height:400px;">
+    <svg width="380" height="300" viewBox="0 0 380 300"><rect x="120" y="30" width="140" height="250" rx="22" fill="#1f3a5f"/><rect x="132" y="52" width="116" height="200" rx="10" fill="#cfe3f6"/><circle cx="190" cy="152" r="34" fill="#fff"/><circle cx="190" cy="152" r="20" fill="#4ea8de"/></svg>
+    <div class="lbl">スマホで撮影</div></div>
+  <div class="el" id="a2a" style="position:absolute;left:640px;top:450px;font-size:90px;color:#2a9d8f;">➜</div>
+  <div class="card el" id="c2b" style="left:770px;top:300px;width:380px;height:400px;">
+    <svg width="380" height="300" viewBox="0 0 380 300"><rect x="50" y="50" width="280" height="200" rx="14" fill="#e9eef5"/><path d="M70 220 L150 120 L210 180 L250 140 L310 220 Z" fill="#9fb3c8"/><path d="M170 150 l25 18 l-10 30" stroke="#e76f51" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="185" cy="170" r="44" fill="none" stroke="#e76f51" stroke-width="7"/></svg>
+    <div class="lbl">傷みを見つける</div></div>
+  <div class="el" id="a2b" style="position:absolute;left:1190px;top:450px;font-size:90px;color:#2a9d8f;">➜</div>
+  <div class="card el" id="c2c" style="left:1320px;top:300px;width:380px;height:400px;">
+    <svg width="380" height="300" viewBox="0 0 380 300"><rect x="40" y="40" width="300" height="220" rx="14" fill="#e7f4ef"/><path d="M40 160 Q140 120 200 170 T340 140" stroke="#bfd8cc" stroke-width="14" fill="none"/><path d="M110 40 L150 260" stroke="#bfd8cc" stroke-width="12"/><path id="pin" d="M230 70 a34 34 0 0 1 34 34 c0 26 -34 66 -34 66 s-34 -40 -34 -66 a34 34 0 0 1 34 -34z" fill="#e76f51"/><circle cx="230" cy="104" r="12" fill="#fff"/></svg>
+    <div class="lbl">地図に記録</div></div>
+</div>
+
+<!-- Scene 3: 共有と優先順位 -->
+<div class="scene" id="sc3">
+  <div class="title el" id="t3">すぐに共有。<span style="color:#2a9d8f">先に直す場所</span>がひと目でわかる</div>
+  <div class="card el" id="c3" style="left:360px;top:280px;width:1200px;height:440px;padding:40px 60px;">
+    <div style="font-size:34px;font-weight:bold;margin-bottom:26px;">点検リスト（優先度順）</div>
+    <div id="rows"></div>
+  </div>
+</div>
+
+<!-- Scene 4: 小さく始める -->
+<div class="scene" id="sc4">
+  <div class="title el" id="t4">まずは<span style="color:#2a9d8f">小さな範囲</span>から</div>
+  <div id="steps"></div>
+</div>
+
+<!-- Scene 5: まとめ -->
+<div class="scene" id="sc5" style="background:linear-gradient(135deg,#1f3a5f,#2a9d8f);">
+  <div class="el" id="t5" style="position:absolute;left:0;right:0;top:400px;text-align:center;font-size:84px;font-weight:bold;color:#fff;letter-spacing:4px;">まちのインフラを、みんなで守る。</div>
+  <div class="el" id="t5b" style="position:absolute;left:0;right:0;top:560px;text-align:center;font-size:34px;color:#e6f2f0;">※この動画は制作サンプルです。登場する取り組みは架空のものです。</div>
+</div>
+
+<div class="cap el" id="cap"></div>
+<div class="foot" id="foot">ナレーション：Open JTalk（HTS voice NIT ATR503 M001）</div>
+
+<script>
+const TL = window.TIMELINE; // [{key,start,end,text,dur,vstart}]
+const ease = x => 1 - Math.pow(1 - Math.min(Math.max(x, 0), 1), 3);
+function pop(id, t, at, dur = 0.5, dy = 40) {
+  const e = document.getElementById(id); if (!e) return;
+  const p = ease((t - at) / dur);
+  e.style.opacity = p; e.style.transform = `translateY(${(1 - p) * dy}px) scale(${0.96 + 0.04 * p})`;
+}
+const rows = [['県道〇〇号線　路面のひび割れ', '#e76f51', 0.92, '高'], ['〇〇橋　手すりのさび', '#f4a261', 0.66, '中'], ['〇〇地区　水道管まわりの段差', '#2a9d8f', 0.38, '低']];
+document.getElementById('rows').innerHTML = rows.map((r, i) => `<div style="display:flex;align-items:center;gap:30px;margin:22px 0;" class="el" id="r${i}">
+  <div style="width:90px;height:56px;border-radius:12px;background:${r[1]};color:#fff;font-size:32px;font-weight:bold;display:flex;align-items:center;justify-content:center;">${r[3]}</div>
+  <div style="width:560px;font-size:34px;">${r[0]}</div>
+  <div style="flex:1;height:26px;background:#eef2f7;border-radius:13px;overflow:hidden;"><div id="b${i}" style="height:100%;width:0;background:${r[1]};"></div></div></div>`).join('');
+const steps = [['1', 'ひとつの地区で試す'], ['2', '使い方をそろえる'], ['3', '少しずつ広げる']];
+document.getElementById('steps').innerHTML = steps.map((s, i) => `<div class="card el" id="st${i}" style="left:${260 + i * 480}px;top:${560 - i * 110}px;width:450px;height:200px;display:flex;align-items:center;gap:22px;padding:0 28px;">
+  <div style="width:96px;height:96px;border-radius:50%;background:#2a9d8f;color:#fff;font-size:52px;font-weight:bold;display:flex;align-items:center;justify-content:center;">${s[0]}</div>
+  <div style="font-size:34px;font-weight:bold;white-space:nowrap;">${s[1]}</div></div>`).join('');
+
+window.render = function (t) {
+  for (let i = 0; i < TL.length; i++) {
+    const s = TL[i], el = document.getElementById('sc' + (i + 1));
+    const fin = ease((t - s.start) / 0.45), fout = i < TL.length - 1 ? 1 - ease((t - (s.end - 0.35)) / 0.35) : 1;
+    el.style.opacity = (t >= s.start && t < s.end + 0.01) ? Math.min(fin, fout) : 0;
+  }
+  const S = k => TL.find(x => x.key === k).start;
+  pop('t1', t, S('s1') + 0.1); pop('c1a', t, S('s1') + 0.6); pop('c1b', t, S('s1') + 1.0); pop('c1c', t, S('s1') + 1.4); pop('c1d', t, S('s1') + 3.6);
+  pop('t2', t, S('s2') + 0.1); pop('c2a', t, S('s2') + 0.6); pop('a2a', t, S('s2') + 1.8, 0.4, 0); pop('c2b', t, S('s2') + 2.2); pop('a2b', t, S('s2') + 3.4, 0.4, 0); pop('c2c', t, S('s2') + 3.8);
+  const pin = document.getElementById('pin'); const pp = ease((t - S('s2') - 4.3) / 0.5); pin.setAttribute('transform', `translate(0 ${(1 - pp) * -60})`); pin.style.opacity = pp;
+  pop('t3', t, S('s3') + 0.1); pop('c3', t, S('s3') + 0.5);
+  rows.forEach((r, i) => { pop('r' + i, t, S('s3') + 1.0 + i * 0.5, 0.4, 20); document.getElementById('b' + i).style.width = (ease((t - S('s3') - 1.4 - i * 0.5) / 0.9) * r[2] * 100) + '%'; });
+  pop('t4', t, S('s4') + 0.1); steps.forEach((s, i) => pop('st' + i, t, S('s4') + 0.7 + i * 0.8));
+  pop('t5', t, S('s5') + 0.3, 0.8, 30); pop('t5b', t, S('s5') + 1.6, 0.6, 10);
+  const cur = TL.find(x => t >= x.vstart && t < x.vstart + x.dur + 0.3);
+  const cap = document.getElementById('cap');
+  if (cur && cur.key !== 's5') { cap.textContent = cur.text; cap.style.opacity = 1; } else { cap.style.opacity = 0; }
+  document.getElementById('chip').style.opacity = t < S('s5') ? 1 : 0;
+};
+</script>
+</body></html>
