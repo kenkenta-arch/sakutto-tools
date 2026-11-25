@@ -51,7 +51,7 @@ def parse_srt(text):
         s = g[0] * 3600 + g[1] * 60 + g[2] + g[3] / 1000
         e = g[4] * 3600 + g[5] * 60 + g[6] + g[7] / 1000
         body = lines[2:] if "-->" in lines[1] else lines[1:]
-        out.append((s, e, " ".join(body).strip()))
+        out.append((s, e, "\n".join(body).strip()))
     return out
 
 
