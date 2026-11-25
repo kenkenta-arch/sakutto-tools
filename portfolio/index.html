@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>制作サンプル | 動画制作ポートフォリオ</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+video { width: 100%; border-radius: 14px; background: #000; display: block; }
+.meta { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 0.95rem; margin-top: 14px; }
+.meta dt { color: var(--muted); }
+.meta dd { margin: 0; }
+</style>
+</head>
+<body>
+<header><span class="logo">🎬 動画制作 ポートフォリオ</span></header>
+<main>
+  <h1>制作サンプル</h1>
+  <p class="lead">図解アニメーション・ショート動画の制作サンプルです。</p>
+
+  <div class="card">
+    <h2 style="margin-top:0">自治体向け 図解アニメーション（サンプル）</h2>
+    <video controls preload="metadata" playsinline poster="zukai-sample.jpg">
+      <source src="zukai-sample.mp4" type="video/mp4">
+    </video>
+    <dl class="meta">
+      <dt>長さ</dt><dd>約33秒・16:9</dd>
+      <dt>内容</dt><dd>「困りごと → 取り組み → 始め方 → まとめ」の流れで構成した、インフラ点検のデジタル化を紹介する図解動画</dd>
+      <dt>制作範囲</dt><dd>構成、図解アニメーション、AI音声ナレーション、字幕、BGM、効果音、書き出し</dd>
+      <dt>音声</dt><dd>Style-Bert-VITS2（JVNV）／BGM・効果音はオリジナル</dd>
+      <dt>注意</dt><dd>応募用に作成したサンプルです。登場する取り組み・地名は架空のものです。</dd>
+    </dl>
+  </div>
+</main>
+<footer>© 動画制作 ポートフォリオ</footer>
+</body>
+</html>
