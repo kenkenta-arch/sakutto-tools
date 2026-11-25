@@ -20,7 +20,8 @@ spec.json の例:
 ・各カットは、元の横長映像の中央を縦長に切り抜いて画面いっぱいに表示する（zoom で少し寄れる、x_offset で左右にずらせる）
 ・"mode": "fit" のカットは、横長の全体を見せ、背景は同じ映像を大きくぼかす（左右に大事なものがある場面用）
 ・テロップは画面の中央付近に、大きな白文字・黒い縁取りで、数語ずつ出す（出る瞬間に少し大きく見せる）
-・音声は各カットの元の音をそのままつなぐ
+・音声は各カットの元の音をそのままつなぐ。"sfx": [{"at": 秒, "file": パス, "vol": 音量}] で効果音を重ねられる
+・"mode": "white" のカットは、一瞬白く光る演出
 """
 import argparse
 import json
@@ -78,6 +79,19 @@ def main():
         for i, c in enumerate(spec["cuts"]):
             z = float(c.get("zoom", 1.0))
             h = int(1920 * z) // 2 * 2
+            if c.get("mode") == "white":  # 一瞬だけ白く光らせる（場面が切り替わる瞬間の演出）
+                d = c["end"] - c["start"]
+                cmd = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+                       "-f", "lavfi", "-i", f"color=white:s=1080x1920:r=30:d={d}",
+                       "-f", "lavfi", "-i", f"anullsrc=r=48000:cl=stereo:d={d}",
+                       "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
+                       "-c:a", "aac", "-b:a", "192k", "-shortest", str(Path(td) / f"p{i:02d}.mp4")]
+                r = subprocess.run(cmd, capture_output=True, text=True)
+                if r.returncode != 0:
+                    print(r.stderr, file=sys.stderr)
+                    sys.exit(1)
+                parts.append(Path(td) / f"p{i:02d}.mp4")
+                continue
             if c.get("mode") == "fit":  # 横長の全体を見せたい場面：全体を表示し、背景は同じ映像を大きくぼかす
                 vf = ("split=2[bg][fg];[bg]scale=-2:1920,crop=1080:1920,gblur=sigma=25[b];"
                       f"[fg]scale={int(1080 * z)}:-2,crop=1080:ih[f];[b][f]overlay=(W-w)/2:(H-h)/2,"
@@ -107,9 +121,23 @@ def main():
         ass = Path(td) / "cap.ass"
         ass.write_text(build_ass(spec), encoding="utf-8")
         esc = str(ass).replace("\\", "\\\\").replace(":", "\\:").replace("'", "\\'")
-        r = subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", str(joined),
-                            "-vf", f"subtitles='{esc}'", "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-                            "-c:a", "copy", "-movflags", "+faststart", str(out)], capture_output=True, text=True)
+        sfx = spec.get("sfx", [])
+        cmd = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", str(joined)]
+        for x in sfx:
+            cmd += ["-i", x["file"]]
+        if sfx:  # 効果音を指定した時間に重ねる
+            fc = [f"[0:v]subtitles='{esc}'[v]", f"[0:a]volume={spec.get('music_volume', 1.0)}[m]"]
+            labels = ["[m]"]
+            for k, x in enumerate(sfx, 1):
+                ms = int(x["at"] * 1000)
+                fc.append(f"[{k}:a]volume={x.get('vol', 1.0)},adelay={ms}|{ms}[s{k}]")
+                labels.append(f"[s{k}]")
+            fc.append("".join(labels) + f"amix=inputs={len(labels)}:duration=first:normalize=0,alimiter=limit=0.95[a]")
+            cmd += ["-filter_complex", ";".join(fc), "-map", "[v]", "-map", "[a]", "-c:a", "aac", "-b:a", "192k"]
+        else:
+            cmd += ["-vf", f"subtitles='{esc}'", "-c:a", "copy"]
+        cmd += ["-c:v", "libx264", "-preset", "medium", "-crf", "20", "-movflags", "+faststart", str(out)]
+        r = subprocess.run(cmd, capture_output=True, text=True)
         if r.returncode != 0:
             print(r.stderr, file=sys.stderr)
             sys.exit(1)
