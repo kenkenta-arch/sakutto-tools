@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>年齢早見表 2027年（令和9年）｜西暦・和暦・干支・学年・満年齢が一覧でわかる | サクッと便利ツール</title>
+<meta name="description" content="2027年（令和9年）の年齢早見表。生まれ年ごとの満年齢・数え年・和暦・干支・学年を一覧で確認できます。生年月日を入れれば、自分の年齢や学年もすぐ計算。年度の切り替えにも対応。">
+<link rel="stylesheet" href="../../style.css">
+<style>
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 7px 4px; text-align: left; white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 0.78rem; position: sticky; top: 0; background: var(--card); }
+.scroll { max-height: 520px; overflow: auto; margin-top: 8px; border: 1px solid var(--border); border-radius: 10px; }
+tr.me td { background: var(--accent-soft); font-weight: 700; }
+small { color: var(--muted); }
+</style>
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>年齢早見表</h1>
+  <p class="lead">生まれ年ごとの年齢・和暦・干支・学年を一覧で確認できます。生年月日を入れると、自分の年齢もすぐわかります。</p>
+
+  <div class="card">
+    <div class="row2">
+      <div><label for="year">表の年</label><select id="year"></select></div>
+      <div><label for="birth">生年月日（任意）</label><input type="date" id="birth"></div>
+    </div>
+    <div class="result" id="me" hidden>
+      <div><span class="num" id="age">-</span><span class="lbl" id="ageLbl">満年齢</span></div>
+      <div><span class="num" id="kazoe">-</span><span class="lbl">数え年</span></div>
+      <div><span class="num" id="eto">-</span><span class="lbl">干支</span></div>
+      <div><span class="num" id="grade">-</span><span class="lbl" id="gradeLbl">学年</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0" id="tableTitle">年齢早見表</h2>
+    <p class="lead" style="margin:0">満年齢は「その年の誕生日を過ぎたあと／前」。学年はその年の4月からの学年です（早生まれ＝1月1日〜4月1日生まれ）。</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>生まれ年</th><th>和暦</th><th>干支</th><th>満年齢<br><small>誕生日後／前</small></th><th>数え年</th><th>学年<br><small>4/2〜12/31生／早生まれ</small></th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+
+  <h2>使い方</h2>
+  <p>「表の年」を選ぶと、その年に何歳になるかが生まれ年ごとに一覧で表示されます。年賀状の準備、書類の記入、子どもの入学・卒業の時期の確認、同窓会の案内などに便利です。生年月日を入れると、その人の行が色付きで表示され、満年齢・数え年・干支・学年がわかります。</p>
+
+  <h2>満年齢と数え年のちがい</h2>
+  <p>ふだん使う「満年齢」は、生まれたときを0歳とし、誕生日を迎えるたびに1歳ずつ増やす数え方です。「数え年」は、生まれた年を1歳とし、元日を迎えるたびに1歳増やす数え方で、厄年や長寿のお祝いなどで使われます。</p>
+
+  <h2>よくある質問</h2>
+  <p><strong>Q. 学年が2つ書いてあるのはなぜですか？</strong><br>日本の学年は4月2日から翌年4月1日生まれまでが同じ学年です。そのため、同じ年に生まれても、1月1日〜4月1日生まれ（早生まれ）の人は、その年の4月2日以降に生まれた人より1つ上の学年になります。</p>
+  <p><strong>Q. 1989年と2019年の和暦は？</strong><br>1989年は1月7日までが昭和64年、1月8日からが平成元年です。2019年は4月30日までが平成31年、5月1日からが令和元年です。表では両方を書いています。</p>
+  <p><strong>Q. 大学の学年は正確ですか？</strong><br>浪人・留年・飛び級などがない場合の目安です。履歴書の学歴を正確に知りたい場合は、<a href="../rirekisho-gakureki/">履歴書の学歴 入学・卒業年 早見表</a>も使ってみてください。</p>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · © サクッと便利ツール</footer>
+<script>
+const $ = id => document.getElementById(id);
+const ETO = ['子（ね）','丑（うし）','寅（とら）','卯（う）','辰（たつ）','巳（み）','午（うま）','未（ひつじ）','申（さる）','酉（とり）','戌（いぬ）','亥（い）'];
+const eto = y => ETO[((y - 4) % 12 + 12) % 12];
+function wareki(y) {
+  if (y === 2019) return '令和元年<br><small>（平成31年）</small>';
+  if (y > 2019) return `令和${y - 2018}年`;
+  if (y === 1989) return '平成元年<br><small>（昭和64年）</small>';
+  if (y > 1989) return `平成${y - 1988}年`;
+  if (y === 1926) return '昭和元年<br><small>（大正15年）</small>';
+  if (y > 1926) return `昭和${y - 1925}年`;
+  return `大正${y - 1911}年`;
+}
+const plain = s => s.replace(/<br><small>.*<\/small>/, '');
+function gradeName(n) {
+  const names = { '-2': '年少', '-1': '年中', 0: '年長' };
+  if (n in names) return names[n];
+  if (n >= 1 && n <= 6) return `小${n}`;
+  if (n >= 7 && n <= 9) return `中${n - 6}`;
+  if (n >= 10 && n <= 12) return `高${n - 9}`;
+  if (n >= 13 && n <= 16) return `大${n - 12}`;
+  return '—';
+}
+const now = new Date().getFullYear();
+for (let y = now - 1; y <= now + 4; y++) {
+  const o = document.createElement('option'); o.value = y; o.textContent = `${y}年（${plain(wareki(y))}）`;
+  $('year').appendChild(o);
+}
+$('year').value = Math.max(now, 2027) <= now + 4 ? 2027 : now;
+
+function render() {
+  const Y = Number($('year').value);
+  $('tableTitle').textContent = `${Y}年（${plain(wareki(Y))}）の年齢早見表`;
+  const v = $('birth').value;
+  const by = v ? Number(v.slice(0, 4)) : null;
+  const rows = [];
+  for (let b = Y; b >= Y - 100; b--) {
+    const after = Y - b, before = Y - b - 1;
+    const g1 = gradeName(Y - b - 6), g2 = gradeName(Y - b - 5);
+    rows.push(`<tr class="${b === by ? 'me' : ''}"><td>${b}年</td><td>${wareki(b)}</td><td>${eto(b)}</td><td>${after}歳／${Math.max(before, 0)}歳</td><td>${Y - b + 1}歳</td><td>${g1}／${g2}</td></tr>`);
+  }
+  $('tbody').innerHTML = rows.join('');
+  if (v) {
+    const [bY, bM, bD] = v.split('-').map(Number);
+    const today = new Date();
+    const ref = Y === today.getFullYear() ? today : new Date(Y, 11, 31);
+    let age = ref.getFullYear() - bY;
+    if (ref.getMonth() + 1 < bM || (ref.getMonth() + 1 === bM && ref.getDate() < bD)) age--;
+    $('me').hidden = false;
+    $('age').textContent = age >= 0 ? `${age}歳` : '—';
+    $('ageLbl').textContent = Y === today.getFullYear() ? '今日の満年齢' : `${Y}年の誕生日を過ぎた満年齢`;
+    $('kazoe').textContent = Y - bY + 1 >= 1 ? `${Y - bY + 1}歳` : '—';
+    $('eto').textContent = eto(bY).replace(/（.*）/, '');
+    const haya = bM < 4 || (bM === 4 && bD === 1);
+    $('grade').textContent = gradeName(Y - bY - (haya ? 5 : 6));
+    $('gradeLbl').textContent = `${Y}年4月からの学年${haya ? '（早生まれ）' : ''}`;
+    const me = document.querySelector('tr.me'); const box = document.querySelector('.scroll'); if (me) box.scrollTop = me.offsetTop - box.clientHeight / 2;
+  } else { $('me').hidden = true; }
+}
+$('year').addEventListener('change', render);
+$('birth').addEventListener('input', render);
+render();
+</script>
+</body>
+</html>
