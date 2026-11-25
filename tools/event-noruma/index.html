@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>イベント周回ノルマ計算｜目標ポイントまで1日何周？必要な時間とスタミナもわかる | サクッと便利ツール</title>
+<meta name="description" content="ゲームのイベントで目標ポイントまで何周すればいいかを計算。今のポイント・目標・1周のポイント・残り日数から、1日のノルマ周回数、必要な時間とスタミナがわかります。ボーナス倍率にも対応。どのゲームでも使えます。">
+<link rel="stylesheet" href="../../style.css">
+<style>
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.warn { color: #c0392b; font-weight: 600; }
+.ok { color: #1e7d4f; font-weight: 600; }
+label.inline { display: flex; align-items: center; gap: 8px; font-weight: 400; }
+label.inline input { width: auto; }
+</style>
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>イベント周回ノルマ計算</h1>
+  <p class="lead">目標ポイントまで、あと何周？ 1日のノルマがすぐわかります。どのゲームでも使えます。</p>
+
+  <div class="card">
+    <div class="row2">
+      <div><label for="now">今のポイント</label><input type="number" id="now" value="12000" min="0" inputmode="numeric"></div>
+      <div><label for="goal">目標のポイント</label><input type="number" id="goal" value="100000" min="0" inputmode="numeric"></div>
+    </div>
+    <div class="row2">
+      <div><label for="per">1周でもらえるポイント</label><input type="number" id="per" value="850" min="0" inputmode="numeric"></div>
+      <div><label for="bonus">ボーナス（％・なければ0）</label><input type="number" id="bonus" value="0" min="0" step="1" inputmode="numeric"></div>
+    </div>
+    <label for="days">イベントの残り日数</label>
+    <input type="number" id="days" value="7" min="1" step="1" inputmode="numeric">
+    <label class="inline"><input type="checkbox" id="today" checked> 今日も1日として数える</label>
+    <div class="row2">
+      <div><label for="mins">1周にかかる時間（分・任意）</label><input type="number" id="mins" placeholder="例：3" min="0" step="0.5" inputmode="decimal"></div>
+      <div><label for="sta">1周に使うスタミナ（任意）</label><input type="number" id="sta" placeholder="例：20" min="0" inputmode="numeric"></div>
+    </div>
+
+    <div class="result">
+      <div><span class="num" id="perDay">-</span><span class="lbl">1日のノルマ（周）</span></div>
+      <div><span class="num" id="total">-</span><span class="lbl">あと必要な周回数</span></div>
+    </div>
+    <p id="detail" class="lead"></p>
+  </div>
+
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+
+  <h2>使い方</h2>
+  <p>今のポイント、目標のポイント、1周でもらえるポイント、イベントの残り日数を入れると、あと何周必要か、1日に何周すればいいかを計算します。ボーナス（特効キャラや装備で〇％アップなど）がある場合は、％で入れてください。1周でもらえるポイントにボーナスが含まれている場合は、0のままでOKです。</p>
+  <p>1周にかかる時間やスタミナを入れると、1日に必要なプレイ時間とスタミナもわかります。毎日のスタミナ回復量と比べて、ノルマが無理なく達成できるか確かめましょう。</p>
+
+  <h2>よくある質問</h2>
+  <p><strong>Q. 周回数が小数になるときは？</strong><br>途中で終わることはできないので、切り上げて表示しています。1日のノルマも切り上げているため、合計は少し多めになります。</p>
+  <p><strong>Q. 「今日も1日として数える」とは？</strong><br>チェックを入れると、今日を含めて残り日数を数えます。今日はもう遊べない場合は、チェックを外すと1日少なく計算します。</p>
+  <p><strong>Q. ボーナスはどう計算していますか？</strong><br>1周のポイント ×（1 ＋ ボーナス％ ÷ 100）で計算し、小数点以下は切り捨てています。ゲームによって計算方法が違うことがあるので、実際のポイントと見比べてください。</p>
+  <p><strong>Q. スタミナの回復時間も知りたい</strong><br><a href="../stamina-kaifuku/">スタミナ回復時間計算</a>で、満タンになる時刻を計算できます。</p>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · <a href="../../privacy.html">プライバシーポリシー</a> · © サクッと便利ツール</footer>
+<script>
+const $ = id => document.getElementById(id);
+const num = id => { const v = parseFloat($(id).value); return isFinite(v) ? v : NaN; };
+function fmtDur(min) {
+  const t = Math.ceil(min); if (t <= 0) return '0分';
+  const h = Math.floor(t / 60), m = t % 60;
+  return (h ? h + '時間' : '') + (m ? m + '分' : '');
+}
+function calc() {
+  const now = num('now'), goal = num('goal'), per = num('per'), bonus = num('bonus') || 0;
+  let days = Math.floor(num('days'));
+  const d = $('detail');
+  $('perDay').textContent = '-'; $('total').textContent = '-'; d.textContent = '';
+  if (![now, goal, per, days].every(isFinite)) { d.textContent = '数字を入れてください。'; return; }
+  if (!$('today').checked) days -= 1;
+  const need = goal - now;
+  if (need <= 0) { $('perDay').textContent = '0'; $('total').textContent = '0'; d.innerHTML = '<span class="ok">もう目標に届いています！</span>'; return; }
+  const gain = Math.floor(per * (1 + Math.max(bonus, 0) / 100));
+  if (gain <= 0) { d.innerHTML = '<span class="warn">1周のポイントを1以上にしてください。</span>'; return; }
+  if (days < 1) { d.innerHTML = '<span class="warn">残り日数が0日です。今日も数える場合はチェックを入れてください。</span>'; return; }
+  const total = Math.ceil(need / gain), perDay = Math.ceil(total / days);
+  $('total').textContent = total.toLocaleString();
+  $('perDay').textContent = perDay.toLocaleString();
+  let html = `あと <strong>${need.toLocaleString()}</strong> ポイント。1周 <strong>${gain.toLocaleString()}</strong> ポイント（ボーナス込み）で、${days}日に分けた場合の計算です。`;
+  const mins = num('mins'), sta = num('sta');
+  if (isFinite(mins) && mins > 0) html += `<br>1日のプレイ時間：<strong>${fmtDur(perDay * mins)}</strong>（合計 ${fmtDur(total * mins)}）`;
+  if (isFinite(sta) && sta > 0) html += `<br>1日に使うスタミナ：<strong>${(perDay * sta).toLocaleString()}</strong>（合計 ${(total * sta).toLocaleString()}）`;
+  d.innerHTML = html;
+}
+document.querySelectorAll('input').forEach(e => e.addEventListener('input', calc));
+$('today').addEventListener('change', calc);
+calc();
+</script>
+</body>
+</html>
