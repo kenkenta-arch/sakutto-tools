@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF分割・ページ抜き出し（無料・アップロード不要）｜必要なページだけ取り出す | サクッと便利ツール</title>
+<meta name="description" content="PDFから必要なページだけを抜き出したり、1ページずつに分割したり、指定したページで2つに分けたりできます。ファイルはサーバーに送信されず、ブラウザの中だけで処理するので安心。スマホでも使えます。登録不要・無料。">
+<link rel="stylesheet" href="../../style.css">
+<style>
+.drop { border: 2px dashed var(--border); border-radius: 14px; padding: 28px 16px; text-align: center; cursor: pointer; display: block; }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.radio { display: grid; gap: 8px; margin-top: 8px; }
+.radio label { display: flex; align-items: center; gap: 8px; font-weight: 400; margin: 0; }
+.radio input { width: auto; }
+.links { display: grid; gap: 8px; margin-top: 12px; }
+.links a { display: block; background: var(--accent-soft); border-radius: 10px; padding: 10px 12px; text-decoration: none; word-break: break-all; }
+#fileinfo { margin-top: 10px; font-weight: 600; }
+.warn { color: #c0392b; }
+</style>
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>PDF分割・ページ抜き出し</h1>
+  <p class="lead">PDFから必要なページだけを取り出します。<strong>ファイルはサーバーに送信されず、お使いの端末の中だけで処理されます。</strong></p>
+
+  <div class="card">
+    <label class="drop" id="drop" for="file">📄 ここをタップしてPDFを選ぶ</label>
+    <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+    <p id="fileinfo"></p>
+
+    <label>分け方</label>
+    <div class="radio">
+      <label><input type="radio" name="mode" value="pick" checked> 選んだページだけ抜き出す（1つのPDFに）</label>
+      <label><input type="radio" name="mode" value="each"> 1ページずつ、別々のPDFにする</label>
+      <label><input type="radio" name="mode" value="at"> 指定したページの前後で、2つに分ける</label>
+    </div>
+    <div id="pickBox">
+      <label for="range">抜き出すページ（例：1-3, 5, 8-10）</label>
+      <input type="text" id="range" placeholder="例：1-3, 5" inputmode="numeric">
+    </div>
+    <div id="atBox" hidden>
+      <label for="at">何ページ目までを1つ目にする？</label>
+      <input type="number" id="at" min="1" value="1" inputmode="numeric">
+    </div>
+    <button id="run" disabled>分割する</button>
+    <p class="lead" id="status"></p>
+    <div class="links" id="links"></div>
+  </div>
+
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+
+  <h2>使い方</h2>
+  <p>「PDFを選ぶ」でファイルを選び、分け方を選んで「分割する」を押します。できあがったPDFは、下に表示されるリンクからダウンロードできます。</p>
+  <p>ページの指定は「1-3」のようにハイフンでつなぐと範囲、「1, 5」のようにカンマで区切ると1ページずつ選べます。組み合わせて「1-3, 5, 8-10」のようにも書けます。書いた順番どおりにページが並びます。</p>
+  <p>資料の一部だけを送りたい、スキャンした書類を1枚ずつに分けたい、提出用のページだけを取り出したい、といったときに便利です。複数のPDFを1つにまとめたいときは<a href="../pdf-ketsugou/">PDF結合</a>を使ってください。</p>
+
+  <h2>よくある質問</h2>
+  <p><strong>Q. PDFはどこかに送信されますか？</strong><br>いいえ。分割はすべてお使いのブラウザの中で行われます。契約書や個人情報が入った書類でも、インターネット上に送信されることはありません。</p>
+  <p><strong>Q. 分割すると画質は落ちますか？</strong><br>いいえ。ページをそのままコピーして新しいPDFを作るだけなので、文字や画像の画質は変わりません。</p>
+  <p><strong>Q. パスワード付きのPDFは使えますか？</strong><br>パスワードで保護されたPDFは分割できません。先にパスワードを解除してから使ってください。</p>
+  <p><strong>Q. 1ページずつに分けると、ダウンロードが大変では？</strong><br>ページごとにリンクが表示されるので、必要なページだけを選んで保存できます。ページ数が多いときは「選んだページだけ抜き出す」も使ってみてください。</p>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · <a href="../../credits.html">使用しているオープンソース</a> · <a href="../../privacy.html">プライバシーポリシー</a> · © サクッと便利ツール</footer>
+<script src="../../vendor/pdf-lib-1.17.1.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let src = null, srcName = '', total = 0, urls = [];
+const mb = b => b >= 1048576 ? (b / 1048576).toFixed(1) + 'MB' : Math.max(1, Math.round(b / 1024)) + 'KB';
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const mode = () => document.querySelector('input[name=mode]:checked').value;
+
+// "1-3, 5, 8-10" → [0,1,2,4,7,8,9]（0始まり）。おかしな指定は null とメッセージ
+function parseRange(text, max) {
+  const t = text.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/[〜～ー−–—]/g, '-').replace(/[、，]/g, ',');
+  if (!t.trim()) return { err: 'ページを入力してください。' };
+  const out = [];
+  for (const part of t.split(',').map(s => s.trim()).filter(Boolean)) {
+    const m = part.match(/^(\d+)(?:\s*-\s*(\d+))?$/);
+    if (!m) return { err: `「${part}」の書き方がわかりません。` };
+    let a = Number(m[1]), b = m[2] ? Number(m[2]) : a;
+    if (a < 1 || b < 1 || a > max || b > max) return { err: `ページは1〜${max}の間で指定してください。` };
+    const step = a <= b ? 1 : -1;
+    for (let p = a; p !== b + step; p += step) out.push(p - 1);
+  }
+  return { pages: out };
+}
+function clearLinks() { urls.forEach(u => URL.revokeObjectURL(u)); urls = []; $('links').innerHTML = ''; }
+function addLink(bytes, name) {
+  const u = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })); urls.push(u);
+  const a = document.createElement('a'); a.href = u; a.download = name; a.textContent = `⬇ ${name}（${mb(bytes.length)}）`;
+  $('links').appendChild(a);
+}
+async function load(file) {
+  clearLinks(); $('status').textContent = '';
+  if (!file) return;
+  try {
+    src = await PDFLib.PDFDocument.load(await file.arrayBuffer());
+    total = src.getPageCount(); srcName = file.name.replace(/\.pdf$/i, '') || 'document';
+    $('fileinfo').innerHTML = `${esc(file.name)}（${total}ページ・${mb(file.size)}）`;
+    $('at').max = Math.max(1, total - 1); if (Number($('at').value) >= total) $('at').value = Math.max(1, total - 1);
+    $('run').disabled = false;
+  } catch (e) {
+    src = null; total = 0; $('run').disabled = true;
+    $('fileinfo').innerHTML = `<span class="warn">${/encrypt/i.test(String(e)) ? 'パスワード付きのPDFのため使えません。' : 'このPDFは読み込めませんでした。'}</span>`;
+  }
+}
+async function make(indices) {
+  const out = await PDFLib.PDFDocument.create();
+  (await out.copyPages(src, indices)).forEach(p => out.addPage(p));
+  return out.save();
+}
+function showMode() { $('pickBox').hidden = mode() !== 'pick'; $('atBox').hidden = mode() !== 'at'; }
+document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', showMode));
+$('file').addEventListener('change', e => { load(e.target.files[0]); e.target.value = ''; });
+const drop = $('drop');
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => load(e.dataTransfer.files[0]));
+$('run').onclick = async () => {
+  if (!src) return;
+  clearLinks(); $('run').disabled = true; $('status').textContent = '分割中…';
+  try {
+    if (mode() === 'pick') {
+      const r = parseRange($('range').value, total);
+      if (r.err) { $('status').innerHTML = `<span class="warn">${r.err}</span>`; $('run').disabled = false; return; }
+      addLink(await make(r.pages), `${srcName}_抜き出し.pdf`);
+      $('status').textContent = `完成：${r.pages.length}ページのPDF`;
+    } else if (mode() === 'each') {
+      for (let i = 0; i < total; i++) addLink(await make([i]), `${srcName}_p${String(i + 1).padStart(String(total).length, '0')}.pdf`);
+      $('status').textContent = `完成：${total}個のPDF（必要なものだけ保存してください）`;
+    } else {
+      const at = Math.floor(Number($('at').value));
+      if (!(at >= 1 && at < total)) { $('status').innerHTML = `<span class="warn">1〜${total - 1}の数字を入れてください（ページが1枚だけのPDFは分けられません）。</span>`; $('run').disabled = false; return; }
+      addLink(await make([...Array(at).keys()]), `${srcName}_1-${at}.pdf`);
+      addLink(await make([...Array(total - at).keys()].map(i => i + at)), `${srcName}_${at + 1}-${total}.pdf`);
+      $('status').textContent = `完成：1〜${at}ページと、${at + 1}〜${total}ページの2つ`;
+    }
+  } catch (e) {
+    $('status').innerHTML = '<span class="warn">分割に失敗しました。別のPDFで試してください。</span>';
+  }
+  $('run').disabled = false;
+};
+showMode();
+</script>
+</body>
+</html>
