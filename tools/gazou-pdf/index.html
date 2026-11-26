@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>画像をPDFに変換（無料・アップロード不要）｜写真・スクショを1つのPDFに | サクッと便利ツール</title>
+<meta name="description" content="JPG・PNGの写真やスクリーンショットを、順番を決めて1つのPDFにまとめます。A4に合わせる・画像の大きさのまま、を選べます。ファイルはサーバーに送信されず、ブラウザの中だけで処理するので安心。スマホでも使えます。登録不要・無料。">
+<link rel="stylesheet" href="../../style.css">
+<style>
+.drop { border: 2px dashed var(--border); border-radius: 14px; padding: 28px 16px; text-align: center; cursor: pointer; display: block; }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.items { display: grid; gap: 8px; margin-top: 16px; }
+.item { display: grid; grid-template-columns: 56px 1fr auto; gap: 10px; align-items: center; background: var(--accent-soft); border-radius: 10px; padding: 8px; }
+.item img { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; background: #fff; }
+.item .name { font-size: 0.85rem; word-break: break-all; }
+.item .meta { font-size: 0.78rem; color: var(--muted); }
+.item .ops { display: flex; gap: 4px; }
+.item .ops button { margin: 0; padding: 6px 10px; background: var(--card); color: var(--text); border: 1px solid var(--border); }
+.radio { display: grid; gap: 8px; margin-top: 6px; }
+.radio label { display: flex; align-items: center; gap: 8px; font-weight: 400; margin: 0; }
+.radio input { width: auto; }
+.warn { color: #c0392b; }
+</style>
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>画像をPDFに変換</h1>
+  <p class="lead">写真やスクリーンショットを、1つのPDFにまとめます。<strong>画像はサーバーに送信されず、お使いの端末の中だけで処理されます。</strong></p>
+
+  <div class="card">
+    <label class="drop" id="drop" for="file">🖼️ ここをタップして画像を選ぶ<br><span class="lead">（JPG・PNG。複数選択OK・あとから追加もできます）</span></label>
+    <input type="file" id="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple hidden>
+    <div class="items" id="items"></div>
+
+    <label>ページの大きさ</label>
+    <div class="radio">
+      <label><input type="radio" name="size" value="a4" checked> A4に合わせる（印刷・提出向け）</label>
+      <label><input type="radio" name="size" value="fit"> 画像の大きさのまま</label>
+    </div>
+    <label for="margin">余白（A4のとき・mm）</label>
+    <input type="number" id="margin" value="10" min="0" max="50" inputmode="numeric">
+    <label for="outname">保存するファイル名</label>
+    <input type="text" id="outname" value="images.pdf">
+    <button id="run" disabled>PDFにしてダウンロード</button>
+    <button id="clear" class="secondary">すべて取り消す</button>
+    <p class="lead" id="status"></p>
+  </div>
+
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+
+  <h2>使い方</h2>
+  <p>「画像を選ぶ」を押して、PDFにしたい写真やスクリーンショットを選びます。↑↓ボタンで順番を入れ替え、「PDFにしてダウンロード」を押すと、1枚の画像が1ページになったPDFが保存されます。</p>
+  <p>「A4に合わせる」を選ぶと、縦長の画像は縦向き、横長の画像は横向きのA4に、余白をとって収めます。「画像の大きさのまま」は、画像と同じ縦横の比率のページになります。</p>
+  <p>書類を写真で撮って提出したい、レシートや証明書をまとめて送りたい、スクショを資料にしたい、といったときに便利です。PDFどうしをまとめたいときは<a href="../pdf-ketsugou/">PDF結合</a>、ページを分けたいときは<a href="../pdf-bunkatsu/">PDF分割</a>を使ってください。</p>
+
+  <h2>よくある質問</h2>
+  <p><strong>Q. 画像はどこかに送信されますか？</strong><br>いいえ。変換はすべてお使いのブラウザの中で行われます。身分証や書類の写真でも、インターネット上に送信されることはありません。</p>
+  <p><strong>Q. iPhoneの写真（HEIC）は使えますか？</strong><br>HEIC形式はそのままでは使えないことがあります。iPhoneの「設定」→「カメラ」→「フォーマット」で「互換性優先」にするとJPGで保存されます。</p>
+  <p><strong>Q. 画質は落ちますか？</strong><br>向きをそろえるため、画像をいったん高画質のJPG（品質92%）に描き直してから入れます。見た目はほとんど変わりませんが、PNGの細かい線はわずかにぼやけることがあります。写真が多いとPDFが大きくなります。大きすぎるときは<a href="../gazou-asshuku/">画像圧縮</a>で小さくしてから使ってください。</p>
+  <p><strong>Q. 写真が横向きになってしまいます</strong><br>スマホで撮った写真は、向きの情報が別に保存されていることがあります。このツールは表示されている向きのまま入れるようにしていますが、うまくいかないときは写真アプリで一度回転して保存し直してください。</p>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · <a href="../../credits.html">使用しているオープンソース</a> · <a href="../../privacy.html">プライバシーポリシー</a> · © サクッと便利ツール</footer>
+<script src="../../vendor/pdf-lib-1.17.1.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let list = []; // {file, url, w, h, error}
+const mb = b => b >= 1048576 ? (b / 1048576).toFixed(1) + 'MB' : Math.max(1, Math.round(b / 1024)) + 'KB';
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const MM = 72 / 25.4, A4 = [210 * MM, 297 * MM];
+
+function render() {
+  $('items').innerHTML = list.map((x, i) => `<div class="item"><img src="${x.url}" alt=""><div><div class="name">${i + 1}. ${esc(x.file.name)}</div><div class="meta">${x.error ? '<span class="warn">⚠️ ' + x.error + '</span>' : x.w + '×' + x.h + '・' + mb(x.file.size)}</div></div><div class="ops"><button data-a="up" data-i="${i}" aria-label="上へ">↑</button><button data-a="down" data-i="${i}" aria-label="下へ">↓</button><button data-a="del" data-i="${i}" aria-label="削除">✕</button></div></div>`).join('');
+  const ok = list.filter(x => !x.error).length;
+  $('run').disabled = ok < 1;
+  $('status').textContent = ok ? `${ok}枚 → ${ok}ページのPDFになります` : '';
+}
+function loadImg(url) { return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = url; }); }
+async function add(files) {
+  for (const file of files) {
+    const item = { file, url: URL.createObjectURL(file) };
+    if (!/^image\/(jpeg|png)$/.test(file.type) && !/\.(jpe?g|png)$/i.test(file.name)) item.error = 'JPGかPNGの画像を選んでください';
+    else { try { const im = await loadImg(item.url); item.w = im.naturalWidth; item.h = im.naturalHeight; } catch (e) { item.error = 'この画像は読み込めませんでした'; } }
+    list.push(item);
+  }
+  render();
+}
+// 表示どおりの向き・形式（JPEG）に描き直す（スマホ写真の向き情報に対応するため）
+async function toJpegBytes(x) {
+  const im = await loadImg(x.url);
+  const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
+  const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0);
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
+  return { bytes: new Uint8Array(await blob.arrayBuffer()), w: c.width, h: c.height };
+}
+$('items').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const i = Number(b.dataset.i);
+  if (b.dataset.a === 'up' && i > 0) [list[i - 1], list[i]] = [list[i], list[i - 1]];
+  if (b.dataset.a === 'down' && i < list.length - 1) [list[i + 1], list[i]] = [list[i], list[i + 1]];
+  if (b.dataset.a === 'del') { URL.revokeObjectURL(list[i].url); list.splice(i, 1); }
+  render();
+});
+$('file').addEventListener('change', e => { add([...e.target.files]); e.target.value = ''; });
+const drop = $('drop');
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => add([...e.dataTransfer.files]));
+$('clear').onclick = () => { list.forEach(x => URL.revokeObjectURL(x.url)); list = []; render(); };
+$('run').onclick = async () => {
+  $('run').disabled = true; $('status').textContent = '変換中…';
+  try {
+    const doc = await PDFLib.PDFDocument.create();
+    const a4 = document.querySelector('input[name=size]:checked').value === 'a4';
+    const mg = Math.min(Math.max(Number($('margin').value) || 0, 0), 50) * MM;
+    for (const x of list.filter(x => !x.error)) {
+      const j = await toJpegBytes(x); const img = await doc.embedJpg(j.bytes);
+      if (a4) {
+        const [pw, ph] = j.w > j.h ? [A4[1], A4[0]] : A4;
+        const s = Math.min((pw - 2 * mg) / j.w, (ph - 2 * mg) / j.h);
+        const w = j.w * s, h = j.h * s;
+        doc.addPage([pw, ph]).drawImage(img, { x: (pw - w) / 2, y: (ph - h) / 2, width: w, height: h });
+      } else {
+        const s = Math.min(1, 14400 / Math.max(j.w, j.h));
+        doc.addPage([j.w * s, j.h * s]).drawImage(img, { x: 0, y: 0, width: j.w * s, height: j.h * s });
+      }
+    }
+    const bytes = await doc.save(); const blob = new Blob([bytes], { type: 'application/pdf' });
+    let name = $('outname').value.trim() || 'images.pdf'; if (!/\.pdf$/i.test(name)) name += '.pdf';
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    $('status').textContent = `完成：${doc.getPageCount()}ページ・${mb(blob.size)}`;
+  } catch (e) {
+    $('status').innerHTML = '<span class="warn">変換に失敗しました。画像を減らすか、別の画像で試してください。</span>';
+  }
+  $('run').disabled = false;
+};
+render();
+</script>
+</body>
+</html>
