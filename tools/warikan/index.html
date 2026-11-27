@@ -43,10 +43,13 @@
 const $ = id => document.getElementById(id);
 function calc() {
   const total = Number($('total').value), n = Math.floor(Number($('people').value));
-  const unit = Number($('unit').value), big = Math.min(Math.floor(Number($('big').value)), n), r = Number($('ratio').value) || 1;
-  if (!(total > 0) || !(n >= 1)) return;
+  const unit = Number($('unit').value), big = Math.max(0, Math.min(Math.floor(Number($('big').value)) || 0, n)), r = Number($('ratio').value) || 1;
+  // 入力がおかしいときは、前の答えを残さずに消す
+  const err = !(total > 0) ? '合計金額を入れてください。' : !(n >= 1) ? '人数を1以上で入れてください。' : !(r > 0) ? '「何倍」には0より大きい数を入れてください。' : '';
+  if (err) { ['normal', 'bigpay', 'diffv'].forEach(id => { $(id).textContent = '-'; }); $('note').textContent = err; return; }
   const weight = (n - big) + big * r;
-  const ceil = v => Math.ceil(v / unit) * unit;
+  // 小数の計算の誤差（例：110.00000000000001）で1単位多くならないよう、わずかに差し引いてから切り上げる
+  const ceil = v => Math.ceil(v / unit - 1e-9) * unit;
   const normal = ceil(total / weight);
   const bigpay = big > 0 ? ceil(total / weight * r) : 0;
   const collected = normal * (n - big) + bigpay * big;
