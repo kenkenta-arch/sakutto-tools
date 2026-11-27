@@ -6,6 +6,7 @@
 <title>割り勘計算｜端数・多めに払う人にも対応 | サクッと便利ツール</title>
 <meta name="description" content="飲み会や旅行の割り勘を一瞬で計算。100円単位・1000円単位の切り上げや、上司など多めに払う人がいる場合の傾斜割り勘にも対応。">
 <link rel="stylesheet" href="../../style.css">
+<style>.result .num { overflow-wrap: anywhere; } .related { padding-left: 1.2em; } .related li { margin: 6px 0; }</style>
 </head>
 <body>
 <header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
@@ -24,7 +25,7 @@
       <option value="1000">1000円単位</option>
     </select>
     <label for="big">多めに払う人の人数（いなければ0）</label><input type="number" id="big" value="0" min="0" inputmode="numeric">
-    <label for="ratio">多めに払う人は普通の人の何倍？</label><input type="number" id="ratio" value="1.5" step="0.1" min="1">
+    <label for="ratio">多めに払う人は普通の人の何倍？</label><input type="number" id="ratio" value="1.5" step="0.1" min="0.1">
     <div class="result">
       <div><span class="num" id="normal">-</span><span class="lbl">1人あたり（円）</span></div>
       <div><span class="num" id="bigpay">-</span><span class="lbl">多めに払う人（円）</span></div>
@@ -37,23 +38,42 @@
   <p>合計金額と人数を入れるだけで、1人あたりの金額がわかります。「100円単位」などを選ぶと、お釣りが出にくいように切り上げて計算します。集めすぎた分は「集めた額との差」に表示されるので、幹事さんの調整に使えます。</p>
   <h2>傾斜割り勘とは？</h2>
   <p>上司や先輩など、一部の人が多めに払う割り勘のことです。「多めに払う人の人数」と「何倍払うか」を入れると自動で計算します。</p>
+  <h2>よくある質問</h2>
+  <p><strong>Q. 「集めた額との差」は何ですか？</strong><br>切り上げたことで、合計金額より多く集まる金額です。例えば12,345円を5人で100円単位にすると、1人2,500円で12,500円集まり、155円余ります。お釣りや次回に回すなど、幹事さんが調整してください。</p>
+  <p><strong>Q. 1.5倍払う人がいるとき、どう計算していますか？</strong><br>普通の人を1人分、多めの人を1.5人分として、合計金額を人数分の重みで割っています。例えば12,000円を4人（うち1人が1.5倍）なら、12,000円 ÷ 4.5人分 ≒ 2,667円が普通の人、その1.5倍の4,000円が多めの人です（1円単位の場合）。</p>
+  <p><strong>Q. 少なめに払う人（学生など）がいるときは？</strong><br>「何倍」に1より小さい数（例：0.5）を入れると、その人を少なめにできます。項目名は「多めに払う人」のままですが、そのまま計算できます。</p>
+  <p class="lead">※ 計算は切り上げのため、集める額は合計金額より少し多くなることがあります。実際の支払いは、お店の会計と参加者どうしで確認してください。</p>
+  <h2>関連ツール</h2>
+  <ul class="related">
+    <li><a href="../sabusuku-goukei/">サブスク合計計算機</a>：毎月の固定費がいくらか調べる</li>
+    <li><a href="../tsumitate/">積立シミュレーター</a>：旅行や飲み会の資金を毎月いくら貯めればいいか計算する</li>
+    <li><a href="../date-calc/">日付計算</a>：旅行やイベントまであと何日か数える</li>
+  </ul>
 </main>
 <footer><a href="../../">ほかのツールを見る</a> · <a href="../../privacy.html">プライバシーポリシー</a> · © サクッと便利ツール</footer>
 <script>
 const $ = id => document.getElementById(id);
 function calc() {
   const total = Number($('total').value), n = Math.floor(Number($('people').value));
-  const unit = Number($('unit').value), big = Math.min(Math.floor(Number($('big').value)), n), r = Number($('ratio').value) || 1;
-  if (!(total > 0) || !(n >= 1)) return;
+  const bigIn = Number($('big').value) || 0, unit = Number($('unit').value), big = Math.max(0, Math.min(Math.floor(bigIn), n));
+  const rv = $('ratio').value.trim(), r = rv === '' ? 1 : Number(rv);
+  // 入力がおかしいときは、前の答えを残さずに消す
+  const err = $('total').value.trim() === '' ? '合計金額を入れてください。' : !(total >= 1) ? '合計金額は1円以上で入れてください。' : total >= 1e12 ? '合計金額は1兆円未満で入れてください。'
+    : !(n >= 1) ? '人数は1以上で入れてください。' : !(r > 0) ? '「何倍」には0より大きい数を入れてください。' : '';
+  if (err) { ['normal', 'bigpay', 'diffv'].forEach(id => { $(id).textContent = '-'; }); $('note').textContent = err; return; }
   const weight = (n - big) + big * r;
-  const ceil = v => Math.ceil(v / unit) * unit;
+  // 小数の計算の誤差（例：110.00000000000001）で1単位多くならないよう、わずかに差し引いてから切り上げる
+  const ceil = v => Math.ceil(v / unit - 1e-9) * unit;
   const normal = ceil(total / weight);
   const bigpay = big > 0 ? ceil(total / weight * r) : 0;
   const collected = normal * (n - big) + bigpay * big;
   $('normal').textContent = n - big > 0 ? normal.toLocaleString() : '-';
   $('bigpay').textContent = big > 0 ? bigpay.toLocaleString() : '-';
   $('diffv').textContent = '+' + (collected - total).toLocaleString();
-  $('note').textContent = `合計 ${collected.toLocaleString()}円 集まります。`;
+  const fixes = [];
+  if (Number($('people').value) !== n) fixes.push(`人数は${n}人`);
+  if (bigIn !== big) fixes.push(`多めに払う人は${big}人`);
+  $('note').textContent = `合計 ${collected.toLocaleString()}円 集まります。` + (fixes.length ? `（${fixes.join('、')}として計算しました）` : '');
 }
 document.querySelectorAll('input,select').forEach(e => e.addEventListener('input', calc));
 calc();

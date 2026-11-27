@@ -97,9 +97,10 @@ function update() {
   const pct = (n('feePct') + n('payPct')) / 100;
   if (pct >= 1) be = '<span class="warn">手数料の合計が100%以上のため、いくらで売っても赤字です。</span>';
   else {
-    let lo = 0, hi = 1;
+    let lo = 0, hi = calc(0).profit >= 0 ? 0 : 1;
     while (calc(hi).profit < 0 && hi < 1e9) hi *= 2;
     if (calc(hi).profit < 0) be = '';
+    else if (hi === 0) be = '販売価格が0でも赤字にならない条件です（お客さんが払う送料などで費用がまかなえています）。';
     else { for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (calc(m).profit < 0) lo = m; else hi = m; } be = `赤字にならない最低の販売価格：<strong>${f(Math.ceil(hi * 100) / 100)}</strong>（ほかの条件はそのまま）`; }
   }
   $('be').innerHTML = be + (r.profit < 0 ? '<br><span class="warn">今の条件では赤字です。</span>' : '');
