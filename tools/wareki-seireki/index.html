@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>和暦・西暦変換｜「平成元年」「R9」「2027」をそのまま入力して一発変換 | サクッと便利ツール</title>
+<meta name="description" content="和暦と西暦を相互に変換。「平成元年」「R9」「昭和64年1月7日」「2019/5/1」などをそのまま入れるだけ。改元の年（2019年・1989年など）は月日で平成・令和を正しく分け、干支や今年の年齢も表示。結果はワンタップでコピーできます。">
+<link rel="stylesheet" href="../../style.css">
+<style>
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chips button { margin: 0; padding: 8px 12px; min-height: 40px; font-size: 0.9rem; background: var(--accent-soft); color: var(--accent); }
+#q { font-size: 1.15rem; }
+.result .num { overflow-wrap: anywhere; }
+.result .num small { display: block; font-size: 0.85rem; font-weight: 600; }
+.result .num .sep { font-size: 0.9em; color: var(--muted); margin: 0 2px; }
+.nw { white-space: nowrap; }
+.notes { margin: 12px 0 0; padding-left: 1.2em; }
+.notes li { margin: 4px 0; }
+.warn { color: #b3261e; font-weight: 600; }
+@media (prefers-color-scheme: dark) { .warn { color: #ff8a80; } }
+.copies { display: flex; flex-wrap: wrap; gap: 8px; }
+.copies button { margin-top: 12px; min-height: 44px; }
+#copied { color: var(--accent); font-weight: 600; min-height: 1.7em; margin: 6px 0 0; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 8px 4px; text-align: left; }
+td:first-child, th:first-child { white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
+.related { padding-left: 1.2em; }
+.related li { margin: 6px 0; }
+</style>
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>和暦・西暦変換</h1>
+  <p class="lead">和暦でも西暦でも、思いついた書き方のまま入れてください。入力した内容はどこにも送信されません。</p>
+
+  <div class="card">
+    <label for="q">年または年月日</label>
+    <input type="text" id="q" value="令和9年" autocomplete="off" enterkeyhint="done" placeholder="例：平成元年、R9、2027、昭和64年1月7日">
+    <div class="chips" aria-label="入力の例">
+      <button type="button" data-v="平成元年">平成元年</button>
+      <button type="button" data-v="R9">R9</button>
+      <button type="button" data-v="2019">2019</button>
+      <button type="button" data-v="昭和64年1月7日">昭和64年1月7日</button>
+      <button type="button" data-v="H31.5.1">H31.5.1</button>
+    </div>
+
+    <p id="err" class="warn" hidden></p>
+    <div id="out">
+      <div class="result">
+        <div><span class="num" id="seireki">-</span><span class="lbl">西暦</span></div>
+        <div><span class="num" id="wareki">-</span><span class="lbl">和暦</span></div>
+        <div><span class="num" id="eto">-</span><span class="lbl">干支（えと）</span></div>
+        <div><span class="num" id="age">-</span><span class="lbl" id="ageLbl">今年の誕生日で</span></div>
+      </div>
+      <ul class="notes" id="notes"></ul>
+      <div class="copies" id="copies"></div>
+      <p id="copied" aria-live="polite"></p>
+      <p>👉 履歴書の学歴欄なら、生年月日から入学・卒業の年をまとめて出せます → <a href="../rirekisho-gakureki/">履歴書の学歴 入学・卒業年 早見表</a></p>
+    </div>
+  </div>
+
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+
+  <h2>使い方</h2>
+  <p>入力欄に「平成元年」「H1」「令和9年」「R9」「2027」のように入れると、すぐに変換されます。数字は全角でも半角でも大丈夫です。月日まで入れたいときは「昭和64年1月7日」「S64.1.7」「2019/5/1」のように入れてください。</p>
+  <p>例：「R9」と入れると、西暦は2027年、干支は丁未（ひのとひつじ）と表示されます。「2019」のように元号が途中で変わった年は、「1月1日〜4月30日は平成31年、5月1日〜12月31日は令和元年」と、日付で分けて表示します。結果の下のボタンで、そのまま書類に貼れる形でコピーできます。</p>
+
+  <h2>元号が変わった日（改元日）</h2>
+  <table>
+    <thead><tr><th>元号</th><th>始まった日</th><th>最後の年</th></tr></thead>
+    <tbody>
+      <tr><td>令和</td><td>2019年5月1日</td><td>（続いている）</td></tr>
+      <tr><td>平成</td><td>1989年1月8日</td><td>平成31年（2019年4月30日まで）</td></tr>
+      <tr><td>昭和</td><td>1926年12月25日</td><td>昭和64年（1989年1月7日まで）</td></tr>
+      <tr><td>大正</td><td>1912年7月30日</td><td>大正15年（1926年12月24日まで）</td></tr>
+      <tr><td>明治</td><td>1868年（明治元年）</td><td>明治45年（1912年7月29日まで）</td></tr>
+    </tbody>
+  </table>
+
+  <h2>よくある質問</h2>
+  <p><strong>Q. 2019年生まれは「平成31年」と「令和元年」のどちらですか？</strong><br>誕生日で変わります。2019年4月30日までに生まれた人は平成31年、5月1日以降に生まれた人は令和元年です。「2019/4/30」のように月日まで入れると、どちらか1つに決めて表示します。1989年（昭和64年／平成元年）も同じで、1月7日までが昭和、1月8日からが平成です。</p>
+  <p><strong>Q. 「平成31年5月1日」と入れたらどうなりますか？</strong><br>この日付は実際にはありません（その日から令和になったため）。このツールでは「令和元年5月1日です」と正しい書き方をお知らせします。書類を書くときの間違い探しにも使えます。</p>
+  <p><strong>Q. 西暦から和暦を暗算する方法は？</strong><br>令和は「西暦−2018」、平成は「西暦−1988」、昭和は「西暦−1925」です。例えば2027年なら2027−2018＝令和9年です。逆に和暦から西暦は、この数を足します。</p>
+  <p><strong>Q. 「元年」と「1年」は同じですか？</strong><br>同じ年です。公的な書類では「元年」と書くことが多いですが、「1年」と書いても意味は通じます。提出先に書き方の決まりがあるときは、それに合わせてください。</p>
+  <p><strong>Q. 明治の初めのころの日付も変換できますか？</strong><br>明治5年（1872年）までは旧暦が使われていたため、月日の変換はできません。年だけなら変換できます。また、明治より前（1867年以前）には対応していません。</p>
+  <p class="lead">※ 将来の年は、令和が続いた場合の計算です。公的な書類では、提出先の書き方の指示に従ってください。</p>
+
+  <h2>関連ツール</h2>
+  <ul class="related">
+    <li><a href="../rirekisho-gakureki/">履歴書の学歴 入学・卒業年 早見表</a>：生年月日から小学校〜大学の入学・卒業年を和暦・西暦で出す</li>
+    <li><a href="../nenrei-hayamihyo/">年齢早見表</a>：生まれ年ごとの年齢・和暦・干支・学年を一覧で見る</li>
+    <li><a href="../date-calc/">日付計算</a>：2つの日付の間の日数や、〇日後の日付を出す</li>
+  </ul>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · <a href="../../privacy.html">プライバシーポリシー</a> · © サクッと便利ツール</footer>
+<script>
+const $ = id => document.getElementById(id);
+// 元号と始まった日（その前日までが前の元号）
+const ERAS = [
+  { n: '明治', k: 'M', s: [1868, 1, 1] },
+  { n: '大正', k: 'T', s: [1912, 7, 30] },
+  { n: '昭和', k: 'S', s: [1926, 12, 25] },
+  { n: '平成', k: 'H', s: [1989, 1, 8] },
+  { n: '令和', k: 'R', s: [2019, 5, 1] },
+];
+const MIN_Y = 1868, MAX_Y = 2200, LUNAR_END = 1872; // 明治5年までは旧暦
+const ALIAS = { '明治': 0, '明': 0, 'M': 0, '大正': 1, '大': 1, 'T': 1, '昭和': 2, '昭': 2, 'S': 2, '平成': 3, '平': 3, 'H': 3, '令和': 4, '令': 4, 'R': 4 };
+const KAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'], KANY = ['きのえ', 'きのと', 'ひのえ', 'ひのと', 'つちのえ', 'つちのと', 'かのえ', 'かのと', 'みずのえ', 'みずのと'];
+const SHI = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'], SHIY = ['ね', 'うし', 'とら', 'う', 'たつ', 'み', 'うま', 'ひつじ', 'さる', 'とり', 'いぬ', 'い'];
+const ANIMAL = ['ねずみ', 'うし', 'とら', 'うさぎ', 'たつ', 'へび', 'うま', 'ひつじ', 'さる', 'とり', 'いぬ', 'いのしし'];
+const WD = ['日', '月', '火', '水', '木', '金', '土'];
+
+const key = (y, m, d) => y * 10000 + m * 100 + d;
+const eraStartKey = i => key(...ERAS[i].s);
+const eraEnd = i => { // 最後の日
+  if (i === ERAS.length - 1) return null;
+  const t = new Date(ERAS[i + 1].s[0], ERAS[i + 1].s[1] - 1, ERAS[i + 1].s[2] - 1);
+  return [t.getFullYear(), t.getMonth() + 1, t.getDate()];
+};
+const nen = n => (n === 1 ? '元' : n) + '年';
+const eraAt = (y, m, d) => { let r = 0; ERAS.forEach((e, i) => { if (key(y, m, d) >= eraStartKey(i)) r = i; }); return r; };
+const etoOf = y => { const a = ((y - 4) % 10 + 10) % 10, b = ((y - 4) % 12 + 12) % 12; return { s: KAN[a] + SHI[b], y: KANY[a] + SHIY[b], z: ANIMAL[b] }; };
+// その年にかかる元号（改元の年は2つ）
+function erasInYear(y) {
+  const out = [];
+  ERAS.forEach((e, i) => {
+    const end = eraEnd(i);
+    if (e.s[0] <= y && (!end || end[0] >= y)) {
+      const from = e.s[0] === y ? [e.s[1], e.s[2]] : [1, 1];
+      const to = end && end[0] === y ? [end[1], end[2]] : [12, 31];
+      out.push({ i, ny: y - e.s[0] + 1, from, to });
+    }
+  });
+  return out;
+}
+const validDate = (y, m, d) => { const t = new Date(y, m - 1, d); return t.getFullYear() === y && t.getMonth() === m - 1 && t.getDate() === d; };
+
+function parse(raw) {
+  let s = raw.normalize('NFKC').replace(/\s+/g, '').replace(/[ー－−‐―]/g, '-').replace(/元(?=年)/g, '1').replace(/^(明治|大正|昭和|平成|令和|[明大昭平令MTSHRmtshr])\.?元$/, '$11');
+  if (!s) return { err: '年を入れてください（例：平成元年、R9、2027）。' };
+  // 月日を入れるときは、年のあとに「年」か「. / -」を必ず入れる（打ち間違いを黙って受け付けないため）
+  let m = s.match(/^(明治|大正|昭和|平成|令和|[明大昭平令MTSHRmtshr])\.?(\d{1,3})(?:年|(?:年|[./-])(\d{1,2})(?:月|[./-])(\d{1,2})日?)?$/);
+  if (m) {
+    const i = ALIAS[m[1].toUpperCase()] ?? ALIAS[m[1]], ny = Number(m[2]);
+    if (ny < 1) return { err: `${ERAS[i].n}は1年（元年）からです。` };
+    const y = ERAS[i].s[0] + ny - 1;
+    return { y, hasDate: m[3] != null, mo: Number(m[3] || 0), d: Number(m[4] || 0), era: i, ny };
+  }
+  m = s.match(/^(\d{4})(?:年|(?:年|[./-])(\d{1,2})(?:月|[./-])(\d{1,2})日?)?$/) || s.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (m) return { y: Number(m[1]), hasDate: m[2] != null, mo: Number(m[2] || 0), d: Number(m[3] || 0), era: -1 };
+  if (/^\d{1,3}年?$/.test(s)) return { err: '元号をつけてください（例：R9、H31、令和9年）。西暦なら4けたで入れてください（例：2027）。' };
+  if ((/月/.test(s) && !/日/.test(s)) || /^(?:(?:明治|大正|昭和|平成|令和|[明大昭平令MTSHRmtshr])\.?\d{1,3}|\d{4})(?:年|[./-])\d{1,2}月?$/.test(s)) return { err: '月日まで入れるときは、日も入れてください（例：令和元年5月1日）。年だけでも変換できます。' };
+  return { err: '読み取れませんでした。「平成元年」「R9」「2027」「昭和64年1月7日」「2019/5/1」のように入れてください。' };
+}
+
+let copyItems = [];
+function update() {
+  const p = parse($('q').value);
+  const notes = [];
+  const fail = msg => { $('err').textContent = msg; $('err').hidden = false; $('out').hidden = true; };
+  if (p.err) return fail(p.err);
+  const { y, mo, d } = p;
+  if (y < MIN_Y) return fail('明治より前（1867年以前）には対応していません。');
+  if (y > MAX_Y) return fail(`${MAX_Y}年までに対応しています。`);
+  const hasDate = p.hasDate;
+  if (hasDate && !validDate(y, mo, d)) return fail(`${y}年${mo}月${d}日という日付はありません。月日を確かめてください。`);
+  if (hasDate && y <= LUNAR_END) return fail('明治5年（1872年）までは旧暦のため、月日の変換には対応していません。年だけ（例：明治3年）なら変換できます。');
+  $('err').hidden = true; $('out').hidden = false;
+
+  const now = new Date(), cy = now.getFullYear();
+  const eto = etoOf(y);
+  $('eto').innerHTML = `${eto.s}<small>${eto.y}・${eto.z}年</small>`;
+  copyItems = [];
+
+  // 入力した元号の範囲を超えている・まだ始まっていないとき
+  if (p.era >= 0) {
+    const e = ERAS[p.era], end = eraEnd(p.era);
+    if (end && y > end[0]) notes.push(`<span class="warn">${e.n}は${end[0] - e.s[0] + 1}年（${end[0]}年${end[1]}月${end[2]}日）までです。</span>${e.n}${p.ny}年にあたる${y}年で計算しました。`);
+  }
+
+  if (hasDate) {
+    const i = eraAt(y, mo, d), e = ERAS[i], ny = y - e.s[0] + 1;
+    const w = WD[new Date(y, mo - 1, d).getDay()];
+    $('seireki').innerHTML = `${y}年<small>${mo}月${d}日（${w}）</small>`;
+    $('wareki').innerHTML = `${e.n}${nen(ny)}<small>${mo}月${d}日</small>`;
+    if (p.era >= 0 && p.era !== i) {
+      const pe = ERAS[p.era];
+      notes.unshift(`<span class="warn">「${pe.n}${nen(p.ny)}${mo}月${d}日」という日付はありません。</span>${key(y, mo, d) < eraStartKey(p.era) ? `${pe.n}は${pe.s[0]}年${pe.s[1]}月${pe.s[2]}日からです。` : `その日はすでに${e.n}です。`}正しくは<strong>${e.n}${nen(ny)}${mo}月${d}日</strong>です。`);
+      notes.splice(1);
+    }
+    // 満年齢（その日に生まれた人の今日の年齢）
+    const today = key(cy, now.getMonth() + 1, now.getDate());
+    if (key(y, mo, d) <= today) {
+      let a = cy - y; if (key(cy, mo, d) > today) a--;
+      $('age').textContent = a + '歳'; $('ageLbl').textContent = 'この日生まれの人の今日の年齢';
+    } else { $('age').textContent = '-'; $('ageLbl').textContent = 'まだ来ていない日です'; }
+    copyItems = [`${e.n}${nen(ny)}${mo}月${d}日`, `${y}年${mo}月${d}日`];
+  } else {
+    const list = erasInYear(y);
+    $('seireki').textContent = y + '年';
+    $('wareki').innerHTML = list.map((x, j) => `<span class="nw">${ERAS[x.i].n}${nen(x.ny)}${j < list.length - 1 ? '<span class="sep">／</span>' : ''}</span>`).join(' ');
+    if (list.length > 1) {
+      notes.unshift('<strong>この年は途中で元号が変わりました。</strong>' + list.map(x => `${x.from[0]}月${x.from[1]}日〜${x.to[0]}月${x.to[1]}日は${ERAS[x.i].n}${nen(x.ny)}`).join('、') + 'です。誕生日などの月日がわかるときは「' + y + '/' + list[1].from[0] + '/' + list[1].from[1] + '」のように月日まで入れると、1つに決まります。');
+    }
+    if (y <= cy) { $('age').textContent = (cy - y) + '歳'; $('ageLbl').textContent = `この年生まれの人の${cy}年の誕生日での年齢`; }
+    else { $('age').textContent = (y - cy) + '年後'; $('ageLbl').textContent = `${cy}年から数えて`; }
+    copyItems = [...list.map(x => `${ERAS[x.i].n}${nen(x.ny)}`), `${y}年`];
+  }
+  if (y > cy) notes.push('将来の年は、令和が続いた場合の計算です。');
+  $('notes').innerHTML = notes.map(n => `<li>${n}</li>`).join('');
+  $('notes').hidden = !notes.length;
+  $('copies').innerHTML = copyItems.map((t, i) => `<button type="button" class="secondary" data-i="${i}">「${t}」をコピー</button>`).join('');
+  $('copied').textContent = '';
+}
+
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) {
+    const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+    document.body.appendChild(t); t.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e2) {} t.remove(); return ok;
+  }
+}
+$('copies').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const t = copyItems[Number(b.dataset.i)];
+  $('copied').textContent = (await copy(t)) ? `「${t}」をコピーしました` : 'コピーできませんでした。文字を長押ししてコピーしてください。';
+});
+document.querySelector('.chips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; $('q').value = b.dataset.v; update(); });
+$('q').addEventListener('input', update);
+update();
+</script>
+</body>
+</html>
