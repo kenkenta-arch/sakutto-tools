@@ -16,8 +16,8 @@
 .item .name { font-size: 0.85rem; word-break: break-all; }
 .item .size { font-size: 0.85rem; color: var(--muted); }
 .item .down { color: var(--accent); font-weight: 700; }
-.item a { font-weight: 600; white-space: nowrap; }
-input[type=range] { padding: 0; }
+.item a { font-weight: 600; white-space: nowrap; display: inline-block; padding: 12px 10px; }
+input[type=range] { padding: 0; height: 32px; }
 .target { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 4px 0 14px; }
 .target label { position: relative; margin: 0; border: 1px solid var(--border); border-radius: 10px; padding: 10px 4px; text-align: center; font-size: 0.9rem; cursor: pointer; background: var(--bg); }
 .target input { position: absolute; left: 0; top: 0; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
@@ -25,7 +25,7 @@ input[type=range] { padding: 0; }
 .target label:has(input:focus-visible) { outline: 2px solid var(--accent); }
 #customWrap { margin-bottom: 14px; }
 .drop { margin-bottom: 4px; }
-.ok { color: #1a7f37; font-weight: 700; }
+.ok { color: #17702f; font-weight: 700; }
 .ng { color: #c62828; font-weight: 700; }
 @media (prefers-color-scheme: dark) { .ok { color: #57d07a; } .ng { color: #ff8a80; } }
 .item .size { line-height: 1.5; }
@@ -52,8 +52,8 @@ input[type=range] { padding: 0; }
     </div>
     <div id="customWrap" hidden>
       <label for="customKb">目標の容量（KB）</label>
-      <input type="number" id="customKb" inputmode="numeric" min="1" placeholder="例：300" value="300">
-      <p class="lead" id="customErr" hidden>1以上の数字を入れてください。それまでは目標なしで圧縮します。</p>
+      <input type="number" id="customKb" inputmode="numeric" min="1" max="100000" step="1" placeholder="例：300" value="300">
+      <p class="ng" id="customErr" hidden>1〜100000の数字を入れてください。それまでは目標なしで圧縮します。</p>
     </div>
 
     <label class="drop" id="drop" for="file">📷 ここをタップして画像を選ぶ<br><span class="lead">（パソコンならドラッグ＆ドロップもOK・複数枚可）</span></label>
@@ -78,6 +78,7 @@ input[type=range] { padding: 0; }
           <option value="image/webp">WebP（さらに軽い）</option>
           <option value="image/png">PNG（劣化なし・重め）</option>
         </select>
+        <p class="lead" id="fmtNote" hidden>このブラウザはWebPで保存できないため、JPGで保存します。</p>
       </div>
     </div>
     <label for="q"><span id="qLbl">画質の上限</span>：<span id="qv">80</span>%<span id="qHint">（目標に収まるよう、必要な分だけ自動で下げます）</span></label>
@@ -105,7 +106,7 @@ input[type=range] { padding: 0; }
   <h2>よくある質問</h2>
   <p><strong>Q. 画像はどこかに送信されますか？</strong><br>いいえ。圧縮はすべてお使いのブラウザの中で行われ、画像がインターネット上に送信されることはありません。</p>
   <p><strong>Q. 「1MB以下」は何バイトのことですか？</strong><br>1MBを1,000,000バイト、500KBを500,000バイトとして計算しています。提出先によって1MBを1,048,576バイトとすることもありますが、どちらの決まりでも収まるよう、少し厳しめの数字にしています。表示している容量も同じ数え方です。</p>
-  <p><strong>Q. 応募フォームで「容量が大きすぎます」と出ます</strong><br>フォームの説明にある上限（例：「2MBまで」「300KB以内」）を「自分で指定」に入れて圧縮し直してください。「✅ 目標達成」になった画像を保存して使えば、容量で弾かれることはありません。縦横のピクセル数にも決まりがある場合は「最大の幅・高さ」も合わせてください。</p>
+  <p><strong>Q. 応募フォームで「容量が大きすぎます」と出ます</strong><br>フォームの説明にある上限（例：「2MBまで」「300KB以内」）を「自分で指定」に入れて圧縮し直してください。「✅ 目標達成」になった画像なら、1枚あたりの容量の制限には収まります。全部の合計で制限しているフォームでは、合計の容量も確かめてください。縦横のピクセル数にも決まりがある場合は「最大の幅・高さ」も合わせてください。</p>
   <p><strong>Q. JPGとWebP、どちらがいいですか？</strong><br>どこでも使えるのはJPGです。WebPは同じ画質でより軽くなりますが、古いソフトでは開けないことがあります。</p>
   <p><strong>Q. 透明な部分がある画像は？</strong><br>JPGは透明を扱えないため、透明な部分は白になります。透明を残したい場合はPNGかWebPを選んでください。</p>
   <p><strong>Q. PNGで保存すると目標に届きません</strong><br>PNGは画質を下げられない形式なので、寸法を小さくするしか軽くする方法がありません。写真ならJPGを選ぶと、見た目をほとんど変えずに大きく軽くできます。</p>
@@ -128,33 +129,39 @@ const ext = { 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/png': 'png' };
 const MIN_Q = 0.3, MIN_SIDE = 200;
 const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+// 目標のバイト数と、画面に出す文字（入力したとおりの数字）
 function getTarget() {
   const v = document.querySelector('input[name=target]:checked').value;
   $('customWrap').hidden = v !== 'custom';
-  if (v !== 'custom') { $('customErr').hidden = true; return Number(v); }
-  const n = Number($('customKb').value);
-  const ok = Number.isFinite(n) && n >= 1;
+  if (v !== 'custom') { $('customErr').hidden = true; return { bytes: Number(v), label: v === '500000' ? '500KB' : v === '1000000' ? '1MB' : '' }; }
+  const n = Math.round(Number($('customKb').value));
+  const ok = $('customKb').value.trim() !== '' && Number.isFinite(n) && n >= 1 && n <= 100000;
   $('customErr').hidden = ok;
-  return ok ? Math.floor(n * 1000) : 0;
+  return ok ? { bytes: n * 1000, label: n + 'KB' } : { bytes: 0, label: '' };
 }
+// WebPで保存できないブラウザ（古いiPhoneなど）ではJPGにする
+const webpOK = (() => { try { const c = document.createElement('canvas'); c.width = c.height = 1; return c.toDataURL('image/webp').startsWith('data:image/webp'); } catch (e) { return false; } })();
+const getFmt = () => { const f = $('fmt').value; return f === 'image/webp' && !webpOK ? 'image/jpeg' : f; };
 
 function updateLabels() {
-  const t = getTarget(), png = $('fmt').value === 'image/png';
+  const t = getTarget().bytes, png = $('fmt').value === 'image/png';
   $('qLbl').textContent = t ? '画質の上限' : '画質';
+  $('fmtNote').hidden = webpOK || $('fmt').value !== 'image/webp';
   $('qHint').textContent = png ? '（PNGは画質の設定がなく、寸法だけで軽くします）' : t ? '（目標に収まるよう、必要な分だけ自動で下げます）' : '（下げるほど軽くなる）';
 }
 
 const encode = (c, fmt, q) => new Promise(r => c.toBlob(r, fmt, q));
 
 // 画像1枚を圧縮。side を渡すと、長い辺をその長さにする（再試行用）
-async function compressOne(file, target, side) {
+async function compressOne(file, tgt, side) {
+  const target = tgt.bytes;
   const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
   const max = side || Number($('maxw').value);
   let w = bmp.width, h = bmp.height;
   if (max > 0 && Math.max(w, h) > max) { const s = max / Math.max(w, h); w = Math.max(1, Math.round(w * s)); h = Math.max(1, Math.round(h * s)); }
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   const ctx = c.getContext('2d');
-  const fmt = $('fmt').value;
+  const fmt = getFmt();
   if (fmt === 'image/jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); }
   ctx.drawImage(bmp, 0, 0, w, h);
   bmp.close && bmp.close();
@@ -175,7 +182,7 @@ async function compressOne(file, target, side) {
     } else { q = lo; blob = low; }
   }
   const base = file.name.replace(/\.[^.]+$/, '') || 'image';
-  return { file, name: `${base}_compressed.${ext[fmt]}`, blob, before: file.size, w, h, q: fmt === 'image/png' ? null : Math.round(q * 100), target, ok: !target || blob.size <= target };
+  return { file, name: `${base}_compressed.${ext[fmt]}`, blob, before: file.size, w, h, q: fmt === 'image/png' ? null : Math.round(q * 100), png: fmt === 'image/png', tgt, target, ok: !target || blob.size <= target };
 }
 
 function setUrl(r) { if (r.url) URL.revokeObjectURL(r.url); if (!r.error) r.url = URL.createObjectURL(r.blob); }
@@ -186,7 +193,7 @@ async function run() {
   if (!files.length) return;
   const id = ++runId, target = getTarget();
   $('items').innerHTML = '<p class="lead">処理中…</p>';
-  $('retry').hidden = true;
+  resetRetry(); $('retry').hidden = true;
   const out = [], used = {};
   for (const f of files) {
     let r;
@@ -203,32 +210,38 @@ async function run() {
   render();
 }
 
+const RETRY_TEXT = '目標を超えた画像だけ、寸法を小さくして再試行';
+function resetRetry() { $('retry').disabled = false; $('retry').textContent = RETRY_TEXT; }
+
 // 目標を超えた画像だけ、長い辺を少しずつ小さくして収まるまでやり直す
 $('retry').onclick = async () => {
   const id = ++runId;
   $('retry').disabled = true; $('retry').textContent = '再試行中…';
+  const old = [];
   for (let i = 0; i < results.length; i++) {
     const r = results[i];
     if (r.error || r.ok) continue;
     let side = Math.max(r.w, r.h), nr = r;
     while (!nr.ok && side > MIN_SIDE) {
       side = Math.max(MIN_SIDE, Math.floor(side * 0.8));
-      try { nr = await compressOne(r.file, r.target, side); } catch (e) { break; }
-      if (id !== runId) return;
+      try { nr = await compressOne(r.file, r.tgt, side); } catch (e) { break; }
+      if (id !== runId) { if (nr !== r) URL.revokeObjectURL(nr.url || ''); return; }
     }
-    if (nr !== r) { nr.name = r.name; nr.retried = true; nr.url = r.url; setUrl(nr); results[i] = nr; }
+    if (nr !== r) { nr.name = r.name; nr.retried = true; old.push(r.url); setUrl(nr); results[i] = nr; }
     if (!nr.ok) nr.gaveUp = true;
   }
-  $('retry').disabled = false; $('retry').textContent = '目標を超えた画像だけ、寸法を小さくして再試行';
+  resetRetry();
   render();
+  old.forEach(u => URL.revokeObjectURL(u)); // 画面を書き換えてから古い画像を片付ける
 };
 
 function render() {
   $('items').innerHTML = results.map(r => {
     if (r.error) return `<div class="item"><div></div><div class="name">${esc(r.name)}<br><span class="size">この画像は読み込めませんでした（壊れているか、このブラウザが対応していない形式です）</span></div><div></div></div>`;
     let st = '';
-    if (r.target) st = r.ok ? `<br><span class="ok">✅ 目標達成（${kb(r.target)}以下）</span>`
-      : `<br><span class="ng">⚠️ 目標の${kb(r.target)}を超えています（実際は${kb(r.blob.size)}）</span>` + (r.gaveUp ? '<br>これ以上小さくすると見えにくくなるため、ここで止めました。目標の容量を上げるか、形式をJPGにしてください。' : '');
+    if (r.target) st = r.ok ? `<br><span class="ok">✅ 目標達成（${r.tgt.label}以下）</span>`
+      : `<br><span class="ng">⚠️ 目標の${r.tgt.label}を超えています（実際は${kb(r.blob.size)}）</span>` + (r.gaveUp ? '<br>これ以上小さくすると見えにくくなるため、ここで止めました。' + (r.png ? '形式をJPGにするか、目標の容量を上げてください。' : '目標の容量を上げてください。') : '');
+    if (r.blob.size >= r.before) st += '<br>※ 元のファイルのほうが小さいので、元の画像をそのまま使っても大丈夫です。';
     const q = r.q != null ? `・画質${r.q}%` : '';
     return `<div class="item"><img src="${r.url}" alt=""><div><div class="name">${esc(r.name)}</div><div class="size">元の容量 ${kb(r.before)} → 完成 <span class="down">${kb(r.blob.size)}</span><br>${r.w}×${r.h}px${q}${r.retried ? '（寸法を小さくしました）' : ''}${st}</div></div><a href="${r.url}" download="${esc(r.name)}">保存</a></div>`;
   }).join('');
@@ -236,12 +249,12 @@ function render() {
   const b = ok.reduce((s, r) => s + r.before, 0), a = ok.reduce((s, r) => s + r.blob.size, 0);
   $('summary').hidden = !ok.length; $('all').hidden = ok.length < 2; $('next').hidden = !ok.length;
   $('before').textContent = kb(b); $('after').textContent = kb(a);
-  $('rate').textContent = b ? Math.max(0, Math.round((1 - a / b) * 100)) + '%' : '-';
+  $('rate').textContent = !b ? '-' : a > b ? '増えました' : Math.round((1 - a / b) * 100) + '%';
   const withT = ok.filter(r => r.target), over = withT.filter(r => !r.ok);
   $('goal').hidden = !withT.length;
   $('goal').innerHTML = !withT.length ? '' : over.length
     ? `<span class="ng">⚠️ ${withT.length}枚中${over.length}枚が目標を超えています。</span>下のボタンで、その画像だけ寸法を小さくしてやり直せます。`
-    : `<span class="ok">✅ ${withT.length}枚すべて目標の${kb(withT[0].target)}以下になりました。</span>「保存」を押してください。`;
+    : `<span class="ok">✅ ${withT.length}枚すべて目標の${withT[0].tgt.label}以下になりました。</span>「保存」を押してください。`;
   $('retry').hidden = !over.some(r => !r.gaveUp);
 }
 
