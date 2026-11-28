@@ -7,6 +7,8 @@
 <meta name="description" content="毎月の積立額・想定利回り・期間を入れると、将来の金額と増えた分を計算。利回り0%にすれば普通の貯金の計算にも使えます。年ごとの推移表つき。">
 <link rel="stylesheet" href="../../style.css">
 <style>
+.result .num { overflow-wrap: anywhere; }
+.tbl { overflow-x: auto; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.85rem; }
 th, td { border-bottom: 1px solid var(--border); padding: 8px 4px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -32,6 +34,7 @@ th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
       <div><label for="rate">想定の年利（%）</label><input type="number" id="rate" value="3" step="0.1" min="0" max="20" inputmode="decimal"></div>
       <div><label for="initial">最初にある金額（円）</label><input type="number" id="initial" value="0" min="0" inputmode="numeric"></div>
     </div>
+    <p class="lead" id="fixNote"></p>
     <div class="result">
       <div><span class="num" id="fv">-</span><span class="lbl">最終的な金額</span></div>
       <div><span class="num" id="principal">-</span><span class="lbl">積み立てた元本</span></div>
@@ -39,7 +42,7 @@ th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
     </div>
     <div class="bar"><span class="p" id="barP"></span><span class="g" id="barG"></span></div>
     <div class="legend">■ 元本　<span style="color:#2fa36b">■</span> 増えた分</div>
-    <table><thead><tr><th>経過</th><th>元本（円）</th><th>増えた分（円）</th><th>合計（円）</th></tr></thead><tbody id="tbody"></tbody></table>
+    <div class="tbl"><table><thead><tr><th>経過</th><th>元本（円）</th><th>増えた分（円）</th><th>合計（円）</th></tr></thead><tbody id="tbody"></tbody></table></div>
   </div>
 
   <div class="ad-slot"><!-- AD_SLOT --></div>
@@ -61,10 +64,19 @@ const $ = id => document.getElementById(id);
 const num = v => Math.round(v).toLocaleString();
 const yen = v => num(v) + '円';
 function calc() {
-  const pmt = Math.max(0, Number($('monthly').value) || 0);
-  const years = Math.min(60, Math.max(1, Math.floor(Number($('years').value) || 1)));
-  const i = Math.max(0, Number($('rate').value) || 0) / 100 / 12;
-  const init = Math.max(0, Number($('initial').value) || 0);
+  const raw = id => Number($(id).value) || 0;
+  const pmt = Math.max(0, raw('monthly'));
+  const years = Math.min(60, Math.max(1, Math.floor(raw('years') || 1)));
+  const rate = Math.max(0, raw('rate'));
+  const i = rate / 100 / 12;
+  const init = Math.max(0, raw('initial'));
+  // 入力をそのまま使えなかったときは、どう計算したかを知らせる
+  const fix = [];
+  if ($('years').value.trim() === '' || raw('years') !== years) fix.push(`年数は${years}年（1〜60年の整数）`);
+  if (raw('monthly') < 0) fix.push('毎月の積立額は0円');
+  if (raw('rate') < 0) fix.push('年利は0%');
+  if (raw('initial') < 0) fix.push('最初にある金額は0円');
+  $('fixNote').textContent = fix.length ? `※ ${fix.join('、')}として計算しています。` : '';
   let bal = init, rows = [];
   for (let m = 1; m <= years * 12; m++) {
     bal = bal * (1 + i) + pmt;
