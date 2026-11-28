@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全角・半角変換｜英数字だけ半角、カタカナだけ全角もワンタップ（ひらがな・カタカナ変換も） | サクッと便利ツール</title>
+<meta name="description" content="全角と半角をまとめて変換。「英数字・記号は半角、カタカナは全角」の入力フォーム用や、ひらがな→カタカナのフリガナ用をワンタップで。変換した文字は色で表示され、変えたくない文字はそのまま。結果はコピーボタンで貼り付けられます。登録不要・無料、入力内容は送信しません。">
+<link rel="stylesheet" href="../../style.css">
+<style>
+.presets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.presets button { margin: 0; padding: 10px 8px; min-height: 52px; font-size: 0.88rem; line-height: 1.35; background: var(--accent-soft); color: var(--accent); }
+.presets button.on { background: var(--accent); color: #fff; }
+textarea { min-height: 120px; }
+.opts { margin-top: 8px; border: 1px solid var(--border); border-radius: 10px; padding: 4px 12px 10px; }
+.opts summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
+.opt { margin-top: 8px; }
+.opt > span { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg label { margin: 0; font-weight: 400; font-size: 0.85rem; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; cursor: pointer; background: var(--bg); position: relative; }
+.seg input { position: absolute; left: 0; top: 0; width: 1px; height: 1px; opacity: 0; margin: 0; }
+.seg label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.seg label:has(input:focus-visible) { outline: 2px solid var(--accent); }
+.out { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; min-height: 3.4em; margin-top: 6px; }
+.out mark { background: #ffe08a; color: #1d1d1f; border-radius: 3px; padding: 0 1px; }
+@media (prefers-color-scheme: dark) { .out mark { background: #7a5c00; color: #fff; } }
+.stat { color: var(--muted); font-size: 0.9rem; margin: 6px 0 0; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.btns button { min-height: 44px; }
+#copied { color: var(--accent); font-weight: 600; min-height: 1.7em; margin: 6px 0 0; }
+.related { padding-left: 1.2em; }
+.related li { margin: 6px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 8px 4px; text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
+</style>
+</head>
+<body>
+<header><a class="logo" href="../../">🧰 サクッと便利ツール</a></header>
+<main>
+  <h1>全角・半角変換</h1>
+  <p class="lead">英数字・記号・カタカナ・スペースを、それぞれ全角か半角にそろえます。選んだ種類の文字だけを変え、ほかの文字はそのまま残します。入力した内容はどこにも送信されません。</p>
+
+  <div class="card">
+    <label for="src">変換したい文字</label>
+    <textarea id="src" placeholder="例：東京都千代田区１－２－３　ｻｸｯﾄﾋﾞﾙ５Ｆ">東京都千代田区丸の内１－２－３　ｻｸｯﾄﾋﾞﾙ５Ｆ
+ＴＥＬ：０３－１２３４－５６７８</textarea>
+
+    <label>よく使う変換（タップで切りかえ）</label>
+    <div class="presets" id="presets">
+      <button type="button" data-p="form">📝 入力フォーム用<br><small>英数字・記号は半角、カナは全角</small></button>
+      <button type="button" data-p="furigana">🔤 フリガナ用<br><small>ひらがな→全角カタカナ</small></button>
+      <button type="button" data-p="half">すべて半角<br><small>英数字・記号・カナ・スペース</small></button>
+      <button type="button" data-p="full">すべて全角<br><small>英数字・記号・カナ・スペース</small></button>
+    </div>
+
+    <details class="opts" id="opts">
+      <summary>文字の種類ごとに細かく決める</summary>
+      <div class="opt"><span>英数字（Ａ→A、１→1）</span><div class="seg">
+        <label><input type="radio" name="alnum" value="keep">変えない</label>
+        <label><input type="radio" name="alnum" value="half">半角に</label>
+        <label><input type="radio" name="alnum" value="full">全角に</label></div></div>
+      <div class="opt"><span>記号（－→-、（→(、＠→@ など）</span><div class="seg">
+        <label><input type="radio" name="sym" value="keep">変えない</label>
+        <label><input type="radio" name="sym" value="half">半角に</label>
+        <label><input type="radio" name="sym" value="full">全角に</label></div></div>
+      <div class="opt"><span>スペース</span><div class="seg">
+        <label><input type="radio" name="space" value="keep">変えない</label>
+        <label><input type="radio" name="space" value="half">半角に</label>
+        <label><input type="radio" name="space" value="full">全角に</label>
+        <label><input type="radio" name="space" value="del">消す</label></div></div>
+      <div class="opt"><span>カタカナ（ｶﾞ→ガ）</span><div class="seg">
+        <label><input type="radio" name="kana" value="keep">変えない</label>
+        <label><input type="radio" name="kana" value="full">全角に</label>
+        <label><input type="radio" name="kana" value="half">半角に</label></div></div>
+      <div class="opt"><span>ひらがな・カタカナ</span><div class="seg">
+        <label><input type="radio" name="hk" value="keep">変えない</label>
+        <label><input type="radio" name="hk" value="toKata">ひらがな→カタカナ</label>
+        <label><input type="radio" name="hk" value="toHira">カタカナ→ひらがな</label></div></div>
+    </details>
+
+    <label>変換した結果 <small style="font-weight:400;color:var(--muted)">（色のついた文字が変わったところ）</small></label>
+    <div class="out" id="out" aria-live="polite"></div>
+    <p class="stat" id="stat"></p>
+    <div class="btns">
+      <button type="button" id="copy">結果をコピー</button>
+      <button type="button" id="swap" class="secondary">結果を入力欄に戻す</button>
+    </div>
+    <p id="copied" aria-live="polite"></p>
+    <p>👉 フォームに文字数の上限があるときは、貼る前に<a href="../moji-count/">文字数カウント</a>で数を確かめられます。</p>
+  </div>
+
+  <div class="ad-slot"><!-- AD_SLOT --></div>
+
+  <h2>使い方</h2>
+  <p>上の欄に文字を貼り付けて、「よく使う変換」のボタンを押すだけです。結果は入力と同時に変わり、変換された文字には色がつきます。「結果をコピー」でそのまま貼り付けられます。</p>
+  <p>例：「丸の内１－２－３　ｻｸｯﾄﾋﾞﾙ５Ｆ」を「入力フォーム用」にすると、「丸の内1-2-3 サクットビル5F」になります。漢字やひらがなは変わりません。番地は半角、建物名のカタカナは全角、と決まっている住所の入力欄でそのまま使えます。</p>
+  <p>ボタンにない組み合わせは、「文字の種類ごとに細かく決める」を開いて、英数字・記号・スペース・カタカナ・ひらがなを別々に選べます。例えば「英数字だけ半角にして、記号の－（全角のハイフン）は残す」こともできます。</p>
+
+  <h2>変換される文字の例</h2>
+  <table>
+    <thead><tr><th>種類</th><th>全角</th><th>半角</th></tr></thead>
+    <tbody>
+      <tr><td>英数字</td><td>ＡＢＣ　ａｂｃ　１２３</td><td>ABC abc 123</td></tr>
+      <tr><td>記号</td><td>－（）＠＃！？／：</td><td>-()@#!?/:</td></tr>
+      <tr><td>カタカナ</td><td>ガギグ　パピプ　ヴ　ー</td><td>ｶﾞｷﾞｸﾞ ﾊﾟﾋﾟﾌﾟ ｳﾞ ｰ</td></tr>
+      <tr><td>スペース</td><td>「　」（全角）</td><td>「 」（半角）</td></tr>
+    </tbody>
+  </table>
+
+  <h2>よくある質問</h2>
+  <p><strong>Q. 「ｶﾞ」のような半角の濁点はどうなりますか？</strong><br>全角にすると「ガ」の1文字にまとめます。逆に「ガ」を半角にすると「ｶﾞ」の2文字になります。そのため、半角にすると文字数が増えることがあります（文字数は結果の下に表示します）。</p>
+  <p><strong>Q. 長音「ー」とハイフン「－」は区別されますか？</strong><br>区別します。カタカナの長音「ー」はカタカナとして扱い、半角にすると「ｰ」になります。全角のハイフン「－」は記号として扱い、半角にすると「-」になります。見た目が似ていても、種類ごとに別々に変わります。</p>
+  <p><strong>Q. 半角にならないカタカナはありますか？</strong><br>「ヵ」「ヶ」「ヮ」「ヰ」「ヱ」は半角の文字がないため、全角のまま残します。また「〜」（波ダッシュ）は、半角の「~」とは別の文字なので変えません。</p>
+  <p><strong>Q. 銀行振込の名義のように「半角カナ」を求められたときは？</strong><br>「すべて半角」を押してください。ひらがなで書いた場合は、「細かく決める」で「ひらがな→カタカナ」も選ぶと、ひらがなも半角カナになります。小さい「ッ」「ャ」を大きい文字にする決まりがある場合は、提出先の指示に合わせて直してください。</p>
+  <p><strong>Q. 入力した文字はどこかに送られますか？</strong><br>いいえ。変換はすべてお使いのブラウザの中で行い、文字がインターネット上に送られることはありません。住所や名前もそのまま入れて大丈夫です。</p>
+
+  <h2>関連ツール</h2>
+  <ul class="related">
+    <li><a href="../moji-count/">文字数カウント</a>：文字数・空白なし・行数を数える</li>
+    <li><a href="../rirekisho-gakureki/">履歴書の学歴 入学・卒業年 早見表</a>：履歴書の学歴欄の年を調べる</li>
+    <li><a href="../date-calc/">日付計算</a>：締め切りまでの日数を数える</li>
+  </ul>
+</main>
+<footer><a href="../../">ほかのツールを見る</a> · <a href="../../privacy.html">プライバシーポリシー</a> · © サクッと便利ツール</footer>
+<script>
+const $ = id => document.getElementById(id);
+const esc = t => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// 半角カナ（ｦ〜ﾝ と 。「」、・）と全角カナの対応
+const HK = 'ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ｡｢｣､･';
+const FK = 'ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン。「」、・';
+const H2F = {}, F2H = {};
+[...HK].forEach((h, i) => { H2F[h] = FK[i]; F2H[FK[i]] = h; });
+const DAKU = 'ﾞ', HANDAKU = 'ﾟ';
+
+const isFullAlnum = c => /[０-９Ａ-Ｚａ-ｚ]/.test(c), isHalfAlnum = c => /[0-9A-Za-z]/.test(c);
+const isFullSym = c => { const n = c.charCodeAt(0); return n >= 0xFF01 && n <= 0xFF5E && !isFullAlnum(c); };
+const isHalfSym = c => { const n = c.charCodeAt(0); return n >= 0x21 && n <= 0x7E && !isHalfAlnum(c); };
+const toHalfAscii = c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0);
+const toFullAscii = c => String.fromCharCode(c.charCodeAt(0) + 0xFEE0);
+const isKata = c => (c >= 'ァ' && c <= 'ヺ') || c === 'ー' || c === 'ヽ' || c === 'ヾ';
+const isHira = c => (c >= 'ぁ' && c <= 'ゖ') || c === 'ゝ' || c === 'ゞ';
+
+function getOpt() {
+  const o = {};
+  ['alnum', 'sym', 'space', 'kana', 'hk'].forEach(n => { o[n] = document.querySelector(`input[name=${n}]:checked`).value; });
+  return o;
+}
+
+// ひらがな・カタカナの入れ替え（1文字ずつ）
+function hiraKata(s, mode) {
+  if (mode === 'keep') return [...s].map(c => [c, c]);
+  return [...s].map(c => {
+    if (mode === 'toKata' && isHira(c)) return [c, c === 'ゝ' ? 'ヽ' : c === 'ゞ' ? 'ヾ' : String.fromCharCode(c.charCodeAt(0) + 0x60)];
+    if (mode === 'toHira' && c >= 'ァ' && c <= 'ヶ') return [c, String.fromCharCode(c.charCodeAt(0) - 0x60)];
+    if (mode === 'toHira' && (c === 'ヽ' || c === 'ヾ')) return [c, c === 'ヽ' ? 'ゝ' : 'ゞ'];
+    return [c, c];
+  });
+}
+
+// 変換：[元の文字, 変換後の文字] の並びを返す（色をつけるため）
+function convert(src, o) {
+  // 半角カナ → 全角カナ を先に（ひらがな変換の前に全角にそろえる）
+  const chars = [...src], step1 = [];
+  for (let i = 0; i < chars.length; i++) {
+    const c = chars[i];
+    if (H2F[c] && (o.kana === 'full' || o.hk === 'toHira')) {
+      const base = H2F[c], nx = chars[i + 1];
+      if (nx === DAKU || nx === HANDAKU) {
+        const comb = (base + (nx === DAKU ? '゙' : '゚')).normalize('NFC');
+        if (comb.length === 1) { step1.push([c + nx, comb]); i++; continue; }
+      }
+      step1.push([c, base]); continue;
+    }
+    if ((c === DAKU || c === HANDAKU) && o.kana === 'full') { step1.push([c, c === DAKU ? '゛' : '゜']); continue; }
+    step1.push([c, c]);
+  }
+  const out = [];
+  for (const [orig, mid] of step1) {
+    let r = '';
+    for (const [, c0] of hiraKata(mid, o.hk)) {
+      let c = c0;
+      if (isFullAlnum(c) && o.alnum === 'half') c = toHalfAscii(c);
+      else if (isHalfAlnum(c) && o.alnum === 'full') c = toFullAscii(c);
+      else if (isFullSym(c) && o.sym === 'half') c = toHalfAscii(c);
+      else if (isHalfSym(c) && o.sym === 'full') c = toFullAscii(c);
+      else if (c === '　' || c === ' ') { c = o.space === 'half' ? ' ' : o.space === 'full' ? '　' : o.space === 'del' ? '' : c; }
+      else if (o.kana === 'half' && isKata(c)) {
+        const d = c.normalize('NFD');
+        if (F2H[d[0]] && (d.length === 1 || d[1] === '゙' || d[1] === '゚')) c = F2H[d[0]] + (d[1] === '゙' ? DAKU : d[1] === '゚' ? HANDAKU : '');
+      }
+      else if (o.kana === 'half' && (c === '゛' || c === '゜' || '。「」、・'.includes(c))) c = c === '゛' ? DAKU : c === '゜' ? HANDAKU : F2H[c];
+      r += c;
+    }
+    out.push([orig, r]);
+  }
+  return out;
+}
+
+let result = '';
+function update() {
+  const o = getOpt(), src = $('src').value, parts = convert(src, o);
+  result = parts.map(p => p[1]).join('');
+  const changed = parts.filter(p => p[0] !== p[1]).length;
+  $('out').innerHTML = src ? parts.map(([a, b]) => a === b ? esc(b) : `<mark>${b === '' ? '␣' : esc(b)}</mark>`).join('') : '<span style="color:var(--muted)">ここに結果が出ます</span>';
+  const len = s => [...s.replace(/\r?\n/g, '')].length;
+  $('stat').textContent = src ? `${changed.toLocaleString()}か所を変換（文字数 ${len(src).toLocaleString()} → ${len(result).toLocaleString()}）` : '';
+  $('copied').textContent = '';
+  document.querySelectorAll('#presets button').forEach(b => b.classList.toggle('on', JSON.stringify(PRESETS[b.dataset.p]) === JSON.stringify(o)));
+}
+
+const PRESETS = {
+  form: { alnum: 'half', sym: 'half', space: 'half', kana: 'full', hk: 'keep' },
+  furigana: { alnum: 'keep', sym: 'keep', space: 'keep', kana: 'full', hk: 'toKata' },
+  half: { alnum: 'half', sym: 'half', space: 'half', kana: 'half', hk: 'keep' },
+  full: { alnum: 'full', sym: 'full', space: 'full', kana: 'full', hk: 'keep' },
+};
+function setOpt(o) { for (const [k, v] of Object.entries(o)) document.querySelector(`input[name=${k}][value=${v}]`).checked = true; update(); }
+$('presets').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setOpt(PRESETS[b.dataset.p]); });
+document.querySelectorAll('.opts input').forEach(el => el.addEventListener('change', update));
+$('src').addEventListener('input', update);
+
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) {
+    const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+    document.body.appendChild(t); t.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e2) {} t.remove(); return ok;
+  }
+}
+$('copy').onclick = async () => { if (!$('src').value) { $('copied').textContent = '先に文字を入れてください。'; return; } $('copied').textContent = (await copy(result)) ? 'コピーしました' : 'コピーできませんでした。結果の文字を長押ししてコピーしてください。'; };
+$('swap').onclick = () => { $('src').value = result; update(); $('copied').textContent = '結果を入力欄に戻しました。続けて別の変換ができます。'; };
+setOpt(PRESETS.form);
+</script>
+</body>
+</html>
