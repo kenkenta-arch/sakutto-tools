@@ -43,7 +43,7 @@
   <h2>よくある質問</h2>
   <p><strong>Q. 「開始日も数える」とは？</strong><br>例えば1月1日から1月3日までの場合、チェックなしなら2日、チェックありなら3日になります。宿泊日数などはチェックなし、イベントの開催日数などはチェックありが一般的です。</p>
   <p><strong>Q. うるう年は考慮されますか？</strong><br>はい、自動で考慮されます。</p>
-  <p><strong>Q. 「〇年〇か月〇日」は、どうやって数えていますか？</strong><br>開始日から1か月ずつ進めて、終了日を超えないところまでを「〇か月」、残りを「〇日」にしています。月末の日から数えるときは、短い月ではその月の末日を1か月後とします（例：1月31日の1か月後は2月28日、うるう年は29日）。会社や役所によって数え方が違うことがあるので、契約や手続きの期限は、必ず相手の決まりで確かめてください。</p>
+  <p><strong>Q. 「〇年〇か月〇日」は、どうやって数えていますか？</strong><br>開始日から1か月ずつ進めて、終了日を超えないところまでを「〇か月」、残りを「〇日」にしています。月末の日から数えるときは、短い月ではその月の末日を1か月後とします（例：1月31日の1か月後は2月28日、うるう年は29日）。「開始日も1日目として数える」にチェックを入れたときは、1月31日〜2月28日、3月31日〜4月30日のように、月末まででちょうど1か月と数えます。会社や役所によって数え方が違うことがあるので、契約や手続きの期限は、必ず相手の決まりで確かめてください。</p>
   <p><strong>Q. 「100日後」は、基準日を1日目として数えますか？</strong><br>数えません。基準日の翌日が「1日後」です。例えば11月1日の10日後は11月11日です。</p>
 
   <h2>関連ツール</h2>
@@ -69,13 +69,16 @@ const clear = ids => ids.forEach(i => { $(i).textContent = '-'; });
 
 // a から k か月後（月末より大きい日は、その月の末日にする）
 const addMonths = (a, k) => { const y = a.getFullYear(), m = a.getMonth() + k; const last = mk(y, m + 1, 0).getDate(); return mk(y, m, Math.min(a.getDate(), last)); };
+// 開始日も数えるとき：同じ日がない月（1/31の1か月後など）は、翌月1日の前日（その月の末日）で1か月とする
+const addMonthsIncl = (a, k) => { const y = a.getFullYear(), m = a.getMonth() + k; const last = mk(y, m + 1, 0).getDate(); return a.getDate() > last ? mk(y, m + 1, 1) : mk(y, m, a.getDate()); };
 // 「〇年〇か月〇日」：開始日から何か月後まで進めるかを数え、残りを日数にする
-function ymd(a, end) {
+function ymd(a, end, incl) {
+  const add = incl ? addMonthsIncl : addMonths;
   let k = (end.getFullYear() - a.getFullYear()) * 12 + end.getMonth() - a.getMonth();
   if (k < 0) k = 0;
-  while (k > 0 && addMonths(a, k) > end) k--;
-  while (addMonths(a, k + 1) <= end) k++;
-  return `${Math.floor(k / 12)}年${k % 12}か月${dayNum(end) - dayNum(addMonths(a, k))}日`;
+  while (k > 0 && add(a, k) > end) k--;
+  while (add(a, k + 1) <= end) k++;
+  return `${Math.floor(k / 12)}年${k % 12}か月${dayNum(end) - dayNum(add(a, k))}日`;
 }
 function diff() {
   const incl = $('incl').checked;
@@ -85,14 +88,16 @@ function diff() {
   if (sign < 0) [a, b] = [b, a];
   const abs = Math.abs(days) + (incl ? 1 : 0);
   $('days').textContent = (sign * abs).toLocaleString();
-  $('weeks').textContent = `${Math.floor(abs/7)}週${abs%7}日`;
+  const neg = sign < 0 ? '−' : '';
+  $('weeks').textContent = `${neg}${Math.floor(abs/7)}週${abs%7}日`;
   const end = incl ? mk(b.getFullYear(), b.getMonth(), b.getDate() + 1) : b;
-  $('ymd').textContent = ymd(a, end);
+  $('ymd').textContent = neg + ymd(a, end, incl);
   // 実際の日付を使った数え方の説明
   const a2 = mk(a.getFullYear(), a.getMonth(), a.getDate() + 1);
-  $('inclNote').textContent = days === 0 && !incl ? '同じ日なので0日です（チェックを入れると1日）。'
+  $('inclNote').textContent = (days === 0 && !incl ? '同じ日なので0日です（チェックを入れると1日）。'
     : incl ? `${jp(a)}（開始日）から${jp(b)}まで、両方の日を含めて数えています。`
-    : `${jp(a)}の翌日（${a2.getMonth()+1}月${a2.getDate()}日）を1日目として、${jp(b)}までを数えています。`;
+    : `${jp(a)}の翌日（${a2.getMonth()+1}月${a2.getDate()}日）を1日目として、${jp(b)}までを数えています。`)
+    + (sign < 0 ? '終了日が開始日より前なので、マイナスで表示しています。' : '');
 }
 function add() {
   const v = $('n').value.trim(), n = Number(v);
@@ -101,7 +106,7 @@ function add() {
   const b = parse($('base').value), d = mk(b.getFullYear(), b.getMonth(), b.getDate() + n);
   if (isNaN(d) || d.getFullYear() < 1 || d.getFullYear() > 9999) { clear(['after']); $('addNote').textContent = '計算できる範囲（西暦1年〜9999年）を超えています。'; return; }
   $('after').textContent = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}（${W[d.getDay()]}）`;
-  $('addNote').textContent = n === 0 ? '0日後は基準日と同じ日です。' : `${jp(b)}の${Math.abs(n).toLocaleString()}日${n > 0 ? '後' : '前'}です（基準日は数えません。基準日の翌日が1日後）。`;
+  $('addNote').textContent = n === 0 ? '0日後は基準日と同じ日です。' : `${jp(b)}の${Math.abs(n).toLocaleString()}日${n > 0 ? '後' : '前'}です（基準日は数えません。基準日の${n > 0 ? '翌日が1日後' : '前日が1日前'}）。`;
 }
 ['d1','d2','incl'].forEach(i => $(i).addEventListener('input', diff));
 ['base','n'].forEach(i => $(i).addEventListener('input', add));

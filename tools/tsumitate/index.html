@@ -43,6 +43,8 @@ th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
     <div class="bar"><span class="p" id="barP"></span><span class="g" id="barG"></span></div>
     <div class="legend">■ 元本　<span style="color:#2fa36b">■</span> 増えた分</div>
     <div class="tbl"><table><thead><tr><th>経過</th><th>元本（円）</th><th>増えた分（円）</th><th>合計（円）</th></tr></thead><tbody id="tbody"></tbody></table></div>
+    <p class="lead" id="scrollHint" hidden>表は横に動かせます →</p>
+    <p>👉 積み立てるお金をつくるなら、毎月の固定費を見直すのが近道です → <a href="../sabusuku-goukei/">サブスク合計計算機</a></p>
   </div>
 
   <div class="ad-slot"><!-- AD_SLOT --></div>
@@ -57,6 +59,13 @@ th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
   <h2>よくある質問</h2>
   <p><strong>Q. 年利は何%を入れればいいですか？</strong><br>決まった正解はありません。銀行の預金なら金利の数字を、投資の場合は控えめな数字を入れて、何パターンか比べてみるのがおすすめです。</p>
   <p><strong>Q. 「複利」とは？</strong><br>増えた分にもさらに利息がつく仕組みです。期間が長いほど、増えた分が大きくなります。</p>
+
+  <h2>関連ツール</h2>
+  <ul style="padding-left:1.2em">
+    <li><a href="../sabusuku-goukei/">サブスク合計計算機</a>：毎月・1年でいくら払っているかを出して、積立に回せる額を見つける</li>
+    <li><a href="../date-calc/">日付計算</a>：目標の日まであと何日・何か月かを数える</li>
+    <li><a href="../warikan/">割り勘計算</a>：旅行や飲み会の費用を人数で分ける</li>
+  </ul>
 </main>
 <footer><a href="../../">ほかのツールを見る</a> · <a href="../../privacy.html">プライバシーポリシー</a> · © サクッと便利ツール</footer>
 <script>
@@ -75,8 +84,9 @@ function calc() {
   if ($('years').value.trim() === '' || raw('years') !== years) fix.push(`年数は${years}年（1〜60年の整数）`);
   if (raw('monthly') < 0) fix.push('毎月の積立額は0円');
   if (raw('rate') < 0) fix.push('年利は0%');
+  const high = rate > 20 ? '年利が20%を超えています。長く続けるには現実的でない数字なので、控えめな数字とも比べてください。' : '';
   if (raw('initial') < 0) fix.push('最初にある金額は0円');
-  $('fixNote').textContent = fix.length ? `※ ${fix.join('、')}として計算しています。` : '';
+  $('fixNote').textContent = (fix.length ? `※ ${fix.join('、')}として計算しています。` : '') + (high ? '※ ' + high : '');
   let bal = init, rows = [];
   for (let m = 1; m <= years * 12; m++) {
     bal = bal * (1 + i) + pmt;
@@ -86,6 +96,7 @@ function calc() {
   $('fv').textContent = yen(bal); $('principal').textContent = yen(p); $('gain').textContent = yen(bal - p);
   const pr = bal > 0 ? p / bal * 100 : 100;
   $('barP').style.width = pr + '%'; $('barG').style.width = (100 - pr) + '%';
+  requestAnimationFrame(() => { const t = document.querySelector('.tbl'); $('scrollHint').hidden = t.scrollWidth <= t.clientWidth + 1; });
   $('tbody').innerHTML = rows.map(r => `<tr><td>${r[0]}年</td><td>${num(r[1])}</td><td>${num(r[2])}</td><td><strong>${num(r[3])}</strong></td></tr>`).join('');
 }
 document.querySelectorAll('input').forEach(e => e.addEventListener('input', calc));
