@@ -10,6 +10,8 @@
 .presets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
 .presets button { margin: 0; padding: 10px 8px; min-height: 52px; font-size: 0.88rem; line-height: 1.35; background: var(--accent-soft); color: var(--accent); }
 .presets button.on { background: var(--accent); color: #fff; }
+@media (prefers-color-scheme: dark) { .presets button.on { color: #0d1b33; } }
+.out mark.del::before { content: "␣"; }
 textarea { min-height: 120px; }
 .opts { margin-top: 8px; border: 1px solid var(--border); border-radius: 10px; padding: 4px 12px 10px; }
 .opts summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
@@ -47,10 +49,10 @@ th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
 
     <label>よく使う変換（タップで切りかえ）</label>
     <div class="presets" id="presets">
-      <button type="button" data-p="form">📝 入力フォーム用<br><small>英数字・記号は半角、カナは全角</small></button>
-      <button type="button" data-p="furigana">🔤 フリガナ用<br><small>ひらがな→全角カタカナ</small></button>
-      <button type="button" data-p="half">すべて半角<br><small>英数字・記号・カナ・スペース</small></button>
-      <button type="button" data-p="full">すべて全角<br><small>英数字・記号・カナ・スペース</small></button>
+      <button type="button" data-p="form">📝 入力フォーム用<br><small>英数字・記号は半角<br>カナは全角</small></button>
+      <button type="button" data-p="furigana">🔤 フリガナ用<br><small>ひらがな→<br>全角カタカナ</small></button>
+      <button type="button" data-p="half">すべて半角<br><small>英数字・記号<br>カナ・スペース</small></button>
+      <button type="button" data-p="full">すべて全角<br><small>英数字・記号<br>カナ・スペース</small></button>
     </div>
 
     <details class="opts" id="opts">
@@ -108,9 +110,10 @@ th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
   </table>
 
   <h2>よくある質問</h2>
-  <p><strong>Q. 「ｶﾞ」のような半角の濁点はどうなりますか？</strong><br>全角にすると「ガ」の1文字にまとめます。逆に「ガ」を半角にすると「ｶﾞ」の2文字になります。そのため、半角にすると文字数が増えることがあります（文字数は結果の下に表示します）。</p>
+  <p><strong>Q. 「ｶﾞ」のような半角の濁点はどうなりますか？</strong><br>全角にすると「ガ」の1文字にまとめます。逆に「ガ」を半角にすると「ｶ」と「ﾞ」の2つの文字を並べた「ｶﾞ」になります。結果の下の文字数は、文字数カウントと同じく見た目どおり1文字と数えますが、入力欄によっては2文字と数えることがあります。文字数の上限が厳しいときは注意してください。</p>
   <p><strong>Q. 長音「ー」とハイフン「－」は区別されますか？</strong><br>区別します。カタカナの長音「ー」はカタカナとして扱い、半角にすると「ｰ」になります。全角のハイフン「－」は記号として扱い、半角にすると「-」になります。見た目が似ていても、種類ごとに別々に変わります。</p>
-  <p><strong>Q. 半角にならないカタカナはありますか？</strong><br>「ヵ」「ヶ」「ヮ」「ヰ」「ヱ」は半角の文字がないため、全角のまま残します。また「〜」（波ダッシュ）は、半角の「~」とは別の文字なので変えません。</p>
+  <p><strong>Q. 半角にならないカタカナはありますか？</strong><br>「ヵ」「ヶ」「ヮ」「ヰ」「ヱ」「ヸ」「ヹ」は半角の文字がないため、全角のまま残します。また「〜」（波ダッシュ）は、半角の「~」とは別の文字なので変えません。</p>
+  <p><strong>Q. 「すべて半角」にすると、かぎかっこも変わりますか？</strong><br>変わります。カタカナを半角にするときは、半角の文字がある「。」「「」「」」「、」「・」「゛」「゜」も、カタカナの仲間として「｡」「｢」「｣」「､」「･」「ﾞ」「ﾟ」にします。文章の句読点を残したいときは、「細かく決める」でカタカナを「変えない」にしてください。</p>
   <p><strong>Q. 銀行振込の名義のように「半角カナ」を求められたときは？</strong><br>「すべて半角」を押してください。ひらがなで書いた場合は、「細かく決める」で「ひらがな→カタカナ」も選ぶと、ひらがなも半角カナになります。小さい「ッ」「ャ」を大きい文字にする決まりがある場合は、提出先の指示に合わせて直してください。</p>
   <p><strong>Q. 入力した文字はどこかに送られますか？</strong><br>いいえ。変換はすべてお使いのブラウザの中で行い、文字がインターネット上に送られることはありません。住所や名前もそのまま入れて大丈夫です。</p>
 
@@ -172,6 +175,9 @@ function convert(src, o) {
       }
       step1.push([c, base]); continue;
     }
+    // Macなどでできる「カ＋濁点」の2文字は、1文字の「ガ」にまとめてから変換する
+    const nx0 = chars[i + 1];
+    if (nx0 === '\u3099' || nx0 === '\u309A') { const comb = (c + nx0).normalize('NFC'); if (comb.length === 1) { step1.push([c + nx0, comb]); i++; continue; } }
     if ((c === DAKU || c === HANDAKU) && o.kana === 'full') { step1.push([c, c === DAKU ? '゛' : '゜']); continue; }
     step1.push([c, c]);
   }
@@ -202,8 +208,10 @@ function update() {
   const o = getOpt(), src = $('src').value, parts = convert(src, o);
   result = parts.map(p => p[1]).join('');
   const changed = parts.filter(p => p[0] !== p[1]).length;
-  $('out').innerHTML = src ? parts.map(([a, b]) => a === b ? esc(b) : `<mark>${b === '' ? '␣' : esc(b)}</mark>`).join('') : '<span style="color:var(--muted)">ここに結果が出ます</span>';
-  const len = s => [...s.replace(/\r?\n/g, '')].length;
+  $('out').innerHTML = src ? parts.map(([a, b]) => a === b ? esc(b) : (b === '' ? '<mark class="del" title="消したスペース"></mark>' : `<mark>${esc(b)}</mark>`)).join('') : '<span style="color:var(--muted)">ここに結果が出ます</span>';
+  // 文字数は「文字数カウント」と同じく、見た目の1文字（絵文字なども1文字）で数える
+  const seg = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter('ja', { granularity: 'grapheme' }) : null;
+  const len = s => { const t = s.replace(/\r?\n/g, ''); return seg ? [...seg.segment(t)].length : [...t].length; };
   $('stat').textContent = src ? `${changed.toLocaleString()}か所を変換（文字数 ${len(src).toLocaleString()} → ${len(result).toLocaleString()}）` : '';
   $('copied').textContent = '';
   document.querySelectorAll('#presets button').forEach(b => b.classList.toggle('on', JSON.stringify(PRESETS[b.dataset.p]) === JSON.stringify(o)));
